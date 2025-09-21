@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import styles from './signup.module.css';
+import styles from '@/app/auth/signup.module.css';
 import classNames from 'classnames';
 import Link from 'next/link';
 
