@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from './Navigation.module.css';
 
 export const Navigation = () => {
@@ -31,9 +32,9 @@ export const Navigation = () => {
             </a>
           </li>
           <li className={styles.menuItem}>
-            <a href="../signin.html" className={styles.menuLink}>
+            <Link href="/auth/signin" className={styles.menuLink}>
               Войти
-            </a>
+            </Link>
           </li>
         </ul>
       </div>
