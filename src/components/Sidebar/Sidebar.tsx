@@ -7,7 +7,7 @@ export const Sidebar = () => {
       <div className={styles.sidebarPersonal}>
         <p className={styles.sidebarPersonalName}>Sergey.Ivanov</p>
         <div className={styles.sidebarIcon}>
-          <svg>
+          <svg className={styles.sidebarIconSvg}>
             <use href="/img/icon/sprite.svg#logout"></use>
           </svg>
         </div>
