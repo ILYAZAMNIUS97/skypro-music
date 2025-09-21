@@ -130,6 +130,7 @@
   background-color: transparent;
   border: none;
   padding: 13px 10px 14px;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -140,6 +141,7 @@
 .search__text::-webkit-input-placeholder {
   background-color: transparent;
   color: #ffffff;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -149,6 +151,7 @@
 .search__text:-ms-input-placeholder {
   background-color: transparent;
   color: #ffffff;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -158,6 +161,7 @@
 .search__text::-ms-input-placeholder {
   background-color: transparent;
   color: #ffffff;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -167,6 +171,7 @@
 .search__text::placeholder {
   background-color: transparent;
   color: #ffffff;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -180,6 +185,7 @@
   line-height: 72px;
   letter-spacing: -0.8px;
   margin-bottom: 45px;
+  color: #ffffff;
 }
 
 .centerblock__filter {
@@ -212,6 +218,7 @@
   font-size: 16px;
   line-height: 24px;
   margin-right: 15px;
+  color: #ffffff;
 }
 
 .filter__button {
@@ -223,6 +230,7 @@
   border: 1px solid #ffffff;
   border-radius: 60px;
   padding: 6px 20px;
+  color: #ffffff;
 }
 
 .filter__button:not(:last-child) {
