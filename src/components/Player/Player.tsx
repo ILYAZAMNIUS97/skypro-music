@@ -1,4 +1,5 @@
 import cn from 'classnames';
+import Link from 'next/link';
 import styles from './Player.module.css';
 
 export const Player = () => {
@@ -44,14 +45,14 @@ export const Player = () => {
                   </svg>
                 </div>
                 <div className={styles.trackPlayAuthor}>
-                  <a className={styles.trackPlayAuthorLink} href="">
+                  <Link className={styles.trackPlayAuthorLink} href="/track/1">
                     Ты та...
-                  </a>
+                  </Link>
                 </div>
                 <div className={styles.trackPlayAlbum}>
-                  <a className={styles.trackPlayAlbumLink} href="">
+                  <Link className={styles.trackPlayAlbumLink} href="/author/1">
                     Баста
-                  </a>
+                  </Link>
                 </div>
               </div>
 

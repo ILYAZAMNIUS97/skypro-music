@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import styles from './Track.module.css';
 
 interface TrackProps {
@@ -6,6 +7,9 @@ interface TrackProps {
   author: string;
   album: string;
   time: string;
+  trackId?: string;
+  authorId?: string;
+  albumId?: string;
 }
 
 export const Track = ({
@@ -14,6 +18,9 @@ export const Track = ({
   author,
   album,
   time,
+  trackId = '1',
+  authorId = '1',
+  albumId = '1',
 }: TrackProps) => {
   return (
     <div className={styles.playlistItem}>
@@ -25,23 +32,23 @@ export const Track = ({
             </svg>
           </div>
           <div className={styles.trackTitleText}>
-            <a className={styles.trackTitleLink} href="">
+            <Link className={styles.trackTitleLink} href={`/track/${trackId}`}>
               {title}{' '}
               {titleSpan && (
                 <span className={styles.trackTitleSpan}>{titleSpan}</span>
               )}
-            </a>
+            </Link>
           </div>
         </div>
         <div className={styles.trackAuthor}>
-          <a className={styles.trackAuthorLink} href="">
+          <Link className={styles.trackAuthorLink} href={`/author/${authorId}`}>
             {author}
-          </a>
+          </Link>
         </div>
         <div className={styles.trackAlbum}>
-          <a className={styles.trackAlbumLink} href="">
+          <Link className={styles.trackAlbumLink} href={`/album/${albumId}`}>
             {album}
-          </a>
+          </Link>
         </div>
         <div className={styles.trackTime}>
           <svg className={styles.trackTimeSvg}>

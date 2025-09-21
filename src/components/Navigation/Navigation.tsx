@@ -6,13 +6,15 @@ export const Navigation = () => {
   return (
     <nav className={styles.nav}>
       <div className={styles.logo}>
-        <Image
-          width={113}
-          height={17}
-          className={styles.logoImage}
-          src="/img/logo.png"
-          alt="logo"
-        />
+        <Link href="/">
+          <Image
+            width={113}
+            height={17}
+            className={styles.logoImage}
+            src="/img/logo.png"
+            alt="logo"
+          />
+        </Link>
       </div>
       <div className={styles.burger}>
         <span className={styles.burgerLine}></span>
@@ -22,14 +24,14 @@ export const Navigation = () => {
       <div className={styles.menu}>
         <ul className={styles.menuList}>
           <li className={styles.menuItem}>
-            <a href="#" className={styles.menuLink}>
+            <Link href="/" className={styles.menuLink}>
               Главное
-            </a>
+            </Link>
           </li>
           <li className={styles.menuItem}>
-            <a href="#" className={styles.menuLink}>
+            <Link href="/playlist" className={styles.menuLink}>
               Мой плейлист
-            </a>
+            </Link>
           </li>
           <li className={styles.menuItem}>
             <Link href="/auth/signin" className={styles.menuLink}>
