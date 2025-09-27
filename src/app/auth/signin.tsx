@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import styles from './signin.module.css';
+import styles from '@/app/auth/signin.module.css';
 import classNames from 'classnames';
 import Link from 'next/link';
 
@@ -10,7 +10,7 @@ export default function Signin() {
         <div className={styles.containerEnter}>
           <div className={styles.modal__block}>
             <form className={styles.modal__form}>
-              <a href="/music/main">
+              <Link href="/">
                 <div className={styles.modal__logo}>
                   <Image
                     src="/img/logo_modal.png"
@@ -19,7 +19,7 @@ export default function Signin() {
                     height={21}
                   />
                 </div>
-              </a>
+              </Link>
               <input
                 className={classNames(styles.modal__input, styles.login)}
                 type="text"
@@ -34,7 +34,7 @@ export default function Signin() {
               />
               <div className={styles.errorContainer}>{/*Блок для ошибок*/}</div>
               <button className={styles.modal__btnEnter}>Войти</button>
-              <Link href={''} className={styles.modal__btnSignup}>
+              <Link href={'/auth/signup'} className={styles.modal__btnSignup}>
                 Зарегистрироваться
               </Link>
             </form>

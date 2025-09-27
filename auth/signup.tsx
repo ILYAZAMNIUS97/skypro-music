@@ -1,5 +1,4 @@
-import Image from 'next/image';
-import styles from '@/app/auth/signup.module.css';
+import styles from './signup.module.css';
 import classNames from 'classnames';
 import Link from 'next/link';
 
@@ -10,14 +9,9 @@ export default function SignUp() {
         <div className={styles.containerEnter}>
           <div className={styles.modal__block}>
             <form className={styles.modal__form}>
-              <Link href="/">
+              <Link href="/music/main">
                 <div className={styles.modal__logo}>
-                  <Image
-                    src="/img/logo_modal.png"
-                    alt="logo"
-                    width={140}
-                    height={21}
-                  />
+                  <img src="/img/logo_modal.png" alt="logo" />
                 </div>
               </Link>
               <input

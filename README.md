@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkyPro Music 🎵
 
-## Getting Started
+Веб-приложение музыкального плеера, созданное на современном стеке технологий **Next.js 15**, **React 19** и **TypeScript**.
 
-First, run the development server:
+## 🚀 Технологии
+
+- **Next.js 15** с App Router
+- **React 19** с функциональными компонентами
+- **TypeScript** для строгой типизации
+- **CSS Modules** для стилизации
+- **classnames** для условных CSS классов
+- **Montserrat** шрифт для типографики
+
+## 📁 Структура проекта
+
+```
+src/
+├── app/                 # Next.js App Router
+│   ├── auth/           # Страницы аутентификации
+│   │   ├── signin/     # Вход в систему
+│   │   └── signup/     # Регистрация
+│   ├── layout.tsx      # Главный layout
+│   └── page.tsx        # Главная страница
+├── components/         # Переиспользуемые компоненты
+│   ├── Navigation/     # Навигация
+│   ├── Player/         # Музыкальный плеер
+│   ├── Playlist/       # Плейлист
+│   ├── Track/          # Трек
+│   ├── Sidebar/        # Боковая панель
+│   ├── Search/         # Поиск
+│   ├── Filter/         # Фильтры
+│   └── MainContent/    # Основной контент
+public/
+├── img/                # Изображения и иконки
+│   ├── icon/          # SVG иконки (play, pause, etc.)
+│   └── *.png          # Логотипы, обложки плейлистов
+```
+
+## 🎵 Основные компоненты
+
+- **Track** - отображение трека с названием, исполнителем, длительностью
+- **Playlist** - список треков с возможностью управления
+- **Player** - аудиоплеер с воспроизведением, паузой, перемоткой
+- **Navigation** - навигационное меню
+- **Search** - поиск по трекам и исполнителям
+- **Filter** - фильтрация контента
+
+## 🛠️ Установка и запуск
+
+### Установка зависимостей
+
+```bash
+npm install
+```
+
+### Запуск в режиме разработки
+
+#### macOS/Linux:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Windows PowerShell:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```powershell
+cd C:\skypro-music; npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000)
 
-## Learn More
+### Другие команды
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Сборка для продакшена
+npm run build
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Запуск собранного приложения
+npm start
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Проверка кода линтером
+npm run lint
+```
 
-## Deploy on Vercel
+## 🎨 Особенности стилизации
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **CSS Modules** с БЭМ-подобными классами
+- **CSS переменные** для темы (цвета, размеры, шрифты)
+- **Mobile-first** подход с responsive design
+- **Flexbox** и **CSS Grid** для раскладки
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔧 Архитектурные решения
+
+- **Server Components** по умолчанию для оптимизации
+- **'use client'** только для интерактивных компонентов
+- **TypeScript** интерфейсы для всех props
+- **Строгая типизация** музыкальных сущностей
+- **Компонентная архитектура** с переиспользуемыми блоками
+
+## 📱 Функциональность
+
+- ✅ Просмотр плейлистов и треков
+- ✅ Аутентификация (вход/регистрация)
+- ✅ Поиск музыки
+- ✅ Фильтрация контента
+- ✅ Адаптивный дизайн
+- 🔄 Музыкальный плеер (в разработке)
+- 🔄 Избранные треки (в разработке)
+
+## 🌟 Дизайн-система
+
+Проект следует современным принципам UX/UI:
+
+- Интуитивная навигация
+- Консистентная типографика
+- Единая цветовая схема
+- Accessibility-friendly интерфейс
+
+## 📝 Разработка
+
+Для разработки используются:
+
+- **ESLint** для качества кода
+- **Prettier** для форматирования
+- **TypeScript strict mode**
+- **Component-driven development**
+
+## 🚀 Деплой
+
+Приложение готово для деплоя на [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
+
+Подробнее о деплое Next.js приложений в [документации](https://nextjs.org/docs/app/building-your-application/deploying).
+
+---
+
+**SkyPro Music** - современное решение для прослушивания музыки в браузере 🎧
