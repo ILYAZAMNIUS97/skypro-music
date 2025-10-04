@@ -1,8 +1,18 @@
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import classNames from 'classnames';
 import styles from './Navigation.module.css';
 
 export const Navigation = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <nav className={styles.nav}>
       <div className={styles.logo}>
@@ -16,12 +26,24 @@ export const Navigation = () => {
           />
         </Link>
       </div>
-      <div className={styles.burger}>
+      <button
+        className={classNames(styles.burger, {
+          [styles.burgerActive]: isMenuOpen,
+        })}
+        onClick={toggleMenu}
+        aria-label="Открыть меню"
+        type="button"
+      >
         <span className={styles.burgerLine}></span>
         <span className={styles.burgerLine}></span>
         <span className={styles.burgerLine}></span>
-      </div>
-      <div className={styles.menu}>
+      </button>
+      <div
+        className={classNames(styles.menu, {
+          [styles.menuOpen]: isMenuOpen,
+          [styles.menuClosed]: !isMenuOpen,
+        })}
+      >
         <ul className={styles.menuList}>
           <li className={styles.menuItem}>
             <Link href="/" className={styles.menuLink}>

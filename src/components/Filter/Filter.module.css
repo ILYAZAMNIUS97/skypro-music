@@ -31,9 +31,16 @@
   padding: 6px 20px;
   color: #ffffff;
   cursor: pointer;
+  background: none;
+  font-family: inherit;
 }
 
-.filterButton:not(:last-child) {
+.filterButtonContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.filterButtonContainer:not(:last-child) {
   margin-right: 10px;
 }
 
