@@ -1,0 +1,50 @@
+.dialog {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #181818;
+  border-radius: 12px;
+  width: 200px;
+  max-height: 200px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  margin-top: 8px;
+}
+
+.content {
+  padding: 0;
+}
+
+.yearList {
+  display: flex;
+  flex-direction: column;
+}
+
+.yearItem {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-family: var(--font-montserrat);
+  font-size: 16px;
+  padding: 16px 24px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.yearItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.yearItem:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.yearItem.selected {
+  color: #b672ff;
+  text-decoration: underline;
+  text-decoration-color: #b672ff;
+  text-underline-offset: 4px;
+}
