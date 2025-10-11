@@ -7,6 +7,7 @@ interface TrackProps {
   author: string;
   album: string;
   time: string;
+  genre: string;
   trackId?: string;
   authorId?: string;
   albumId?: string;
@@ -18,12 +19,13 @@ export const Track = ({
   author,
   album,
   time,
+  genre,
   trackId = '1',
   authorId = '1',
   albumId = '1',
 }: TrackProps) => {
   return (
-    <div className={styles.playlistItem}>
+    <div className={styles.playlistItem} data-genre={genre}>
       <div className={styles.playlistTrack}>
         <div className={styles.trackTitle}>
           <div className={styles.trackTitleImage}>

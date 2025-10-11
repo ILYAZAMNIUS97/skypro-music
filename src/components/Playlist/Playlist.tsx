@@ -8,6 +8,7 @@ const tracks = [
     author: 'Nero',
     album: 'Welcome Reality',
     time: '4:44',
+    genre: 'Dubstep',
   },
   {
     title: 'Elektro',
@@ -15,6 +16,7 @@ const tracks = [
     author: 'Dynoro, Outwork, Mr. Gee',
     album: 'Elektro',
     time: '2:22',
+    genre: 'Electronic',
   },
   {
     title: "I'm Fire",
@@ -22,6 +24,7 @@ const tracks = [
     author: 'Ali Bakgor',
     album: "I'm Fire",
     time: '2:22',
+    genre: 'House',
   },
   {
     title: 'Non Stop',
@@ -29,6 +32,7 @@ const tracks = [
     author: 'Стоункат, Psychopath',
     album: 'Non Stop',
     time: '4:12',
+    genre: 'Electronic',
   },
   {
     title: 'Run Run',
@@ -36,6 +40,7 @@ const tracks = [
     author: 'Jaded, Will Clarke, AR/CO',
     album: 'Run Run',
     time: '2:54',
+    genre: 'Techno',
   },
 ];
 
@@ -61,6 +66,7 @@ export const Playlist = () => {
             author={track.author}
             album={track.album}
             time={track.time}
+            genre={track.genre}
           />
         ))}
       </div>
