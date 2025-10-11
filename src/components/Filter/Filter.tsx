@@ -5,6 +5,7 @@ import styles from './Filter.module.css';
 import { ArtistDialog } from './ArtistDialog';
 import { YearDialog } from './YearDialog';
 import { GenreDialog } from './GenreDialog';
+import { tracks } from '../../data/tracks';
 
 export const Filter = () => {
   const [isArtistDialogOpen, setIsArtistDialogOpen] = useState(false);
@@ -92,6 +93,7 @@ export const Filter = () => {
               onClose={() => setIsArtistDialogOpen(false)}
               onSelectArtist={handleSelectArtist}
               selectedArtist={selectedArtist}
+              tracks={tracks}
             />
           )}
         </div>
@@ -118,6 +120,7 @@ export const Filter = () => {
               onClose={() => setIsGenreDialogOpen(false)}
               onSelectGenre={handleSelectGenre}
               selectedGenre={selectedGenre}
+              tracks={tracks}
             />
           )}
         </div>

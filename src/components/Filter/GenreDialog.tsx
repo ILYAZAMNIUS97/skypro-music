@@ -1,21 +1,23 @@
 import { type FC } from 'react';
 import classNames from 'classnames';
 import styles from './GenreDialog.module.css';
+import { type Track } from '../../types/track';
+import { getUniqueGenres } from '../../utils/filterUtils';
 
 interface GenreDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectGenre: (genre: string) => void;
   selectedGenre?: string;
+  tracks: Track[];
 }
-
-const GENRES = ['Рок', 'Хип-Хоп', 'Поп-музыка', 'Техно', 'Инди'];
 
 export const GenreDialog: FC<GenreDialogProps> = ({
   isOpen,
   onClose,
   onSelectGenre,
   selectedGenre,
+  tracks,
 }) => {
   if (!isOpen) return null;
 
@@ -24,11 +26,14 @@ export const GenreDialog: FC<GenreDialogProps> = ({
     onClose();
   };
 
+  // Получаем уникальные жанры из треков
+  const uniqueGenres = getUniqueGenres(tracks);
+
   return (
     <div className={styles.dialog}>
       <div className={styles.content}>
         <div className={styles.genreList}>
-          {GENRES.map((genre) => (
+          {uniqueGenres.map((genre) => (
             <button
               key={genre}
               className={classNames(styles.genreItem, {

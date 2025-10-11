@@ -1,17 +1,6 @@
 import Link from 'next/link';
 import styles from './Track.module.css';
-
-interface TrackProps {
-  title: string;
-  titleSpan?: string;
-  author: string;
-  album: string;
-  time: string;
-  genre: string;
-  trackId?: string;
-  authorId?: string;
-  albumId?: string;
-}
+import { type TrackProps } from '../../types/track';
 
 export const Track = ({
   title,

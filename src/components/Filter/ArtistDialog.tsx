@@ -1,52 +1,23 @@
 import { type FC } from 'react';
 import classNames from 'classnames';
 import styles from './ArtistDialog.module.css';
+import { type Track } from '../../types/track';
+import { getUniqueAuthors } from '../../utils/filterUtils';
 
 interface ArtistDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectArtist: (artist: string) => void;
   selectedArtist?: string;
+  tracks: Track[];
 }
-
-const ARTISTS = [
-  'Michael Jackson',
-  'The Beatles',
-  'Queen',
-  'Led Zeppelin',
-  'Pink Floyd',
-  'AC/DC',
-  'Metallica',
-  'Nirvana',
-  'Radiohead',
-  'Coldplay',
-  'U2',
-  'Red Hot Chili Peppers',
-  'Foo Fighters',
-  'Green Day',
-  'Linkin Park',
-  'Eminem',
-  'Kanye West',
-  'Drake',
-  'Taylor Swift',
-  'Ariana Grande',
-  'Billie Eilish',
-  'Ed Sheeran',
-  'Bruno Mars',
-  'Justin Bieber',
-  'Rihanna',
-  'Beyoncé',
-  'Adele',
-  'Lady Gaga',
-  'Katy Perry',
-  'Dua Lipa',
-];
 
 export const ArtistDialog: FC<ArtistDialogProps> = ({
   isOpen,
   onClose,
   onSelectArtist,
   selectedArtist,
+  tracks,
 }) => {
   if (!isOpen) return null;
 
@@ -55,11 +26,14 @@ export const ArtistDialog: FC<ArtistDialogProps> = ({
     onClose();
   };
 
+  // Получаем уникальных авторов из треков
+  const uniqueAuthors = getUniqueAuthors(tracks);
+
   return (
     <div className={styles.dialog}>
       <div className={styles.content}>
         <div className={styles.artistList}>
-          {ARTISTS.map((artist) => (
+          {uniqueAuthors.map((artist) => (
             <button
               key={artist}
               className={classNames(styles.artistItem, {
