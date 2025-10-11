@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import classNames from 'classnames';
 import styles from './Filter.module.css';
 import { ArtistDialog } from './ArtistDialog';
 import { YearDialog } from './YearDialog';
@@ -84,7 +85,12 @@ export const Filter = () => {
       <div ref={filterRef} className={styles.filter}>
         <div className={styles.filterTitle}>Искать по:</div>
         <div className={styles.filterButtonContainer}>
-          <button className={styles.filterButton} onClick={handleArtistClick}>
+          <button
+            className={classNames(styles.filterButton, {
+              [styles.active]: isArtistDialogOpen,
+            })}
+            onClick={handleArtistClick}
+          >
             исполнителю
           </button>
           {isArtistDialogOpen && (
@@ -98,7 +104,12 @@ export const Filter = () => {
           )}
         </div>
         <div className={styles.filterButtonContainer}>
-          <button className={styles.filterButton} onClick={handleYearClick}>
+          <button
+            className={classNames(styles.filterButton, {
+              [styles.active]: isYearDialogOpen,
+            })}
+            onClick={handleYearClick}
+          >
             году выпуска
           </button>
           {isYearDialogOpen && (
@@ -111,7 +122,12 @@ export const Filter = () => {
           )}
         </div>
         <div className={styles.filterButtonContainer}>
-          <button className={styles.filterButton} onClick={handleGenreClick}>
+          <button
+            className={classNames(styles.filterButton, {
+              [styles.active]: isGenreDialogOpen,
+            })}
+            onClick={handleGenreClick}
+          >
             жанру
           </button>
           {isGenreDialogOpen && (

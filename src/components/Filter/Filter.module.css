@@ -55,3 +55,8 @@
   color: #ad61ff;
   cursor: pointer;
 }
+
+.filterButton.active {
+  border-color: #d9b6ff;
+  color: #d9b6ff;
+}
