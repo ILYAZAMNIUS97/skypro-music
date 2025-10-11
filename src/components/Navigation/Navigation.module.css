@@ -37,7 +37,7 @@
 }
 
 .burgerActive .burgerLine:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
+  transform: rotate(45deg) translate(6px, 6px);
 }
 
 .burgerActive .burgerLine:nth-child(2) {
@@ -45,7 +45,7 @@
 }
 
 .burgerActive .burgerLine:nth-child(3) {
-  transform: rotate(-45deg) translate(7px, -6px);
+  transform: rotate(-45deg) translate(6px, -6px);
 }
 
 .menu {
