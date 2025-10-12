@@ -4,14 +4,11 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import classNames from 'classnames';
+import { Fade as Hamburger } from 'hamburger-react';
 import styles from './Navigation.module.css';
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   return (
     <nav className={styles.nav}>
@@ -26,18 +23,14 @@ export const Navigation = () => {
           />
         </Link>
       </div>
-      <button
-        className={classNames(styles.burger, {
-          [styles.burgerActive]: isMenuOpen,
-        })}
-        onClick={toggleMenu}
-        aria-label="Открыть меню"
-        type="button"
-      >
-        <span className={styles.burgerLine}></span>
-        <span className={styles.burgerLine}></span>
-        <span className={styles.burgerLine}></span>
-      </button>
+      <div className={styles.burger}>
+        <Hamburger
+          toggled={isMenuOpen}
+          toggle={setIsMenuOpen}
+          size={20}
+          color="#d3d3d3"
+        />
+      </div>
       <div
         className={classNames(styles.menu, {
           [styles.menuOpen]: isMenuOpen,
