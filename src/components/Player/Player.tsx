@@ -1,42 +1,149 @@
+'use client';
+
+import { useCallback } from 'react';
 import cn from 'classnames';
 import Link from 'next/link';
 import styles from './Player.module.css';
+import { usePlayer } from '@/contexts/PlayerContext';
+import { useAppSelector } from '@/store/hooks';
 
 export const Player = () => {
+  const { state, togglePlay, setCurrentTime, setVolume, toggleRepeat } =
+    usePlayer();
+
+  // Получаем состояние из Redux
+  const reduxPlayerState = useAppSelector((state) => state.player);
+
+  // Обработчики для кнопок управления
+  const handlePlayClick = useCallback(() => {
+    // Добавляем небольшую задержку для предотвращения быстрых переключений
+    setTimeout(() => {
+      togglePlay();
+    }, 50);
+  }, [togglePlay]);
+
+  const handlePrevClick = useCallback(() => {
+    alert('Еще не реализовано');
+  }, []);
+
+  const handleNextClick = useCallback(() => {
+    alert('Еще не реализовано');
+  }, []);
+
+  const handleRepeatClick = useCallback(() => {
+    toggleRepeat();
+  }, [toggleRepeat]);
+
+  const handleShuffleClick = useCallback(() => {
+    alert('Еще не реализовано');
+  }, []);
+
+  // Обработчик для прогресс-бара
+  const handleProgressChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newTime = parseFloat(e.target.value);
+      setCurrentTime(newTime);
+    },
+    [setCurrentTime],
+  );
+
+  // Обработчик для громкости
+  const handleVolumeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newVolume = parseFloat(e.target.value);
+      setVolume(newVolume);
+    },
+    [setVolume],
+  );
+
+  // Форматирование времени (пока не используется, но может пригодиться)
+  // const formatTime = useCallback((seconds: number) => {
+  //   const mins = Math.floor(seconds / 60);
+  //   const secs = Math.floor(seconds % 60);
+  //   return `${mins}:${secs.toString().padStart(2, '0')}`;
+  // }, []);
+
+  // Вычисляем прогресс в процентах (пока не используется, но может пригодиться)
+  // const progressPercent = useMemo(() => {
+  //   if (state.duration === 0) return 0;
+  //   return (state.currentTime / state.duration) * 100;
+  // }, [state.currentTime, state.duration]);
+
   return (
     <div className={styles.bar}>
       <div className={styles.barContent}>
-        <div className={styles.barPlayerProgress}></div>
+        {/* Прогресс-бар */}
+        <div className={styles.barPlayerProgress}>
+          <input
+            type="range"
+            min="0"
+            max={state.duration || 0}
+            value={state.currentTime}
+            onChange={handleProgressChange}
+            className={styles.progressBar}
+          />
+        </div>
+
         <div className={styles.barPlayerBlock}>
           <div className={styles.barPlayer}>
+            {/* Кнопки управления */}
             <div className={styles.playerControls}>
-              <div className={styles.playerBtnPrev}>
+              <button
+                className={styles.playerBtnPrev}
+                onClick={handlePrevClick}
+                disabled={!reduxPlayerState.currentTrack}
+              >
                 <svg className={styles.playerBtnPrevSvg}>
                   <use href="/img/icon/sprite.svg#icon-prev"></use>
                 </svg>
-              </div>
-              <div className={cn(styles.playerBtnPlay, styles.btn)}>
+              </button>
+
+              <button
+                className={cn(styles.playerBtnPlay, styles.btn)}
+                onClick={handlePlayClick}
+                disabled={!reduxPlayerState.currentTrack}
+              >
                 <svg className={styles.playerBtnPlaySvg}>
-                  <use href="/img/icon/sprite.svg#icon-play"></use>
+                  <use
+                    href={`/img/icon/sprite.svg#icon-${reduxPlayerState.isPlaying ? 'pause' : 'play'}`}
+                  ></use>
                 </svg>
-              </div>
-              <div className={styles.playerBtnNext}>
+              </button>
+
+              <button
+                className={styles.playerBtnNext}
+                onClick={handleNextClick}
+                disabled={!reduxPlayerState.currentTrack}
+              >
                 <svg className={styles.playerBtnNextSvg}>
                   <use href="/img/icon/sprite.svg#icon-next"></use>
                 </svg>
-              </div>
-              <div className={cn(styles.playerBtnRepeat, styles.btnIcon)}>
+              </button>
+
+              <button
+                className={cn(styles.playerBtnRepeat, styles.btnIcon, {
+                  [styles.active]: state.isRepeat,
+                })}
+                onClick={handleRepeatClick}
+              >
                 <svg className={styles.playerBtnRepeatSvg}>
                   <use href="/img/icon/sprite.svg#icon-repeat"></use>
                 </svg>
-              </div>
-              <div className={cn(styles.playerBtnShuffle, styles.btnIcon)}>
+              </button>
+
+              <button
+                className={cn(styles.playerBtnShuffle, styles.btnIcon, {
+                  [styles.active]: state.isShuffle,
+                })}
+                onClick={handleShuffleClick}
+              >
                 <svg className={styles.playerBtnShuffleSvg}>
                   <use href="/img/icon/sprite.svg#icon-shuffle"></use>
                 </svg>
-              </div>
+              </button>
             </div>
 
+            {/* Информация о треке */}
             <div className={styles.playerTrackPlay}>
               <div className={styles.trackPlayContain}>
                 <div className={styles.trackPlayImage}>
@@ -45,31 +152,47 @@ export const Player = () => {
                   </svg>
                 </div>
                 <div className={styles.trackPlayAuthor}>
-                  <Link className={styles.trackPlayAuthorLink} href="/track/1">
-                    Ты та...
+                  <Link
+                    className={styles.trackPlayAuthorLink}
+                    href={
+                      reduxPlayerState.currentTrack
+                        ? `/track/${reduxPlayerState.currentTrack.trackId || '1'}`
+                        : '#'
+                    }
+                  >
+                    {reduxPlayerState.currentTrack?.title || 'Выберите трек'}
                   </Link>
                 </div>
                 <div className={styles.trackPlayAlbum}>
-                  <Link className={styles.trackPlayAlbumLink} href="/author/1">
-                    Баста
+                  <Link
+                    className={styles.trackPlayAlbumLink}
+                    href={
+                      reduxPlayerState.currentTrack
+                        ? `/author/${reduxPlayerState.currentTrack.authorId || '1'}`
+                        : '#'
+                    }
+                  >
+                    {reduxPlayerState.currentTrack?.author || 'Исполнитель'}
                   </Link>
                 </div>
               </div>
 
               <div className={styles.trackPlayDislike}>
-                <div className={cn(styles.playerBtnShuffle, styles.btnIcon)}>
+                <button className={cn(styles.playerBtnShuffle, styles.btnIcon)}>
                   <svg className={styles.trackPlayLikeSvg}>
                     <use href="/img/icon/sprite.svg#icon-like"></use>
                   </svg>
-                </div>
-                <div className={cn(styles.trackPlayDislike, styles.btnIcon)}>
+                </button>
+                <button className={cn(styles.trackPlayDislike, styles.btnIcon)}>
                   <svg className={styles.trackPlayDislikeSvg}>
                     <use href="/img/icon/sprite.svg#icon-dislike"></use>
                   </svg>
-                </div>
+                </button>
               </div>
             </div>
           </div>
+
+          {/* Управление громкостью */}
           <div className={styles.barVolumeBlock}>
             <div className={styles.volumeContent}>
               <div className={styles.volumeImage}>
@@ -81,7 +204,11 @@ export const Player = () => {
                 <input
                   className={cn(styles.volumeProgressLine, styles.btn)}
                   type="range"
-                  name="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={state.volume}
+                  onChange={handleVolumeChange}
                 />
               </div>
             </div>

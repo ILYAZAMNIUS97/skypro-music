@@ -20,6 +20,50 @@
   width: 100%;
   height: 5px;
   background: #2e2e2e;
+  position: relative;
+}
+
+.progressBar {
+  width: 100%;
+  height: 100%;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+.progressBar::-webkit-slider-runnable-track {
+  height: 5px;
+  background: #2e2e2e;
+  border-radius: 0;
+}
+
+.progressBar::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #1a1a1a;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -3.5px;
+}
+
+.progressBar::-moz-range-track {
+  height: 5px;
+  background: #2e2e2e;
+  border-radius: 0;
+  border: none;
+}
+
+.progressBar::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #1a1a1a;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
 }
 
 .barPlayerBlock {
@@ -345,4 +389,39 @@
   fill: #696969;
   stroke: #ffffff;
   cursor: pointer;
+}
+
+/* Активные состояния для кнопок */
+.active .playerBtnRepeatSvg,
+.active .playerBtnShuffleSvg {
+  fill: #ffffff;
+  stroke: #ffffff;
+}
+
+/* Стили для кнопок */
+.playerBtnPrev,
+.playerBtnPlay,
+.playerBtnNext,
+.playerBtnRepeat,
+.playerBtnShuffle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s ease;
+}
+
+.playerBtnPrev:disabled,
+.playerBtnPlay:disabled,
+.playerBtnNext:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.playerBtnPrev:hover:not(:disabled),
+.playerBtnPlay:hover:not(:disabled),
+.playerBtnNext:hover:not(:disabled) {
+  opacity: 0.8;
 }

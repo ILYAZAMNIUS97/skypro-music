@@ -1,8 +1,19 @@
+'use client';
+
+import { useEffect } from 'react';
 import { Track } from '../Track/Track';
 import styles from './Playlist.module.css';
 import { tracks } from '../../data/tracks';
+import { usePlayer } from '@/contexts/PlayerContext';
 
 export const Playlist = () => {
+  const { setPlaylist } = usePlayer();
+
+  // Инициализируем плейлист при загрузке компонента
+  useEffect(() => {
+    setPlaylist(tracks);
+  }, [setPlaylist]);
+
   return (
     <div className={styles.content}>
       <div className={styles.contentTitle}>
@@ -25,6 +36,9 @@ export const Playlist = () => {
             album={track.album}
             time={track.time}
             genre={track.genre}
+            trackId={index.toString()}
+            authorId={index.toString()}
+            albumId={index.toString()}
           />
         ))}
       </div>

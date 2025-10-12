@@ -8,6 +8,7 @@ export const tracks: Track[] = [
     album: 'Welcome Reality',
     time: '4:44',
     genre: 'Dubstep',
+    src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3',
   },
   {
     title: 'Elektro',
@@ -16,6 +17,7 @@ export const tracks: Track[] = [
     album: 'Elektro',
     time: '2:22',
     genre: 'Electronic',
+    src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3',
   },
   {
     title: "I'm Fire",
@@ -24,6 +26,7 @@ export const tracks: Track[] = [
     album: "I'm Fire",
     time: '2:22',
     genre: 'House',
+    src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3',
   },
   {
     title: 'Non Stop',
@@ -32,6 +35,7 @@ export const tracks: Track[] = [
     album: 'Non Stop',
     time: '4:12',
     genre: 'Electronic',
+    src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3',
   },
   {
     title: 'Run Run',
@@ -40,5 +44,6 @@ export const tracks: Track[] = [
     album: 'Run Run',
     time: '2:54',
     genre: 'Techno',
+    src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3',
   },
 ];

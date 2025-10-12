@@ -1,6 +1,12 @@
+'use client';
+
 import Link from 'next/link';
+import { useCallback } from 'react';
+import cn from 'classnames';
 import styles from './Track.module.css';
 import { type TrackProps } from '../../types/track';
+import { usePlayer } from '@/contexts/PlayerContext';
+import { useAppSelector } from '@/store/hooks';
 
 export const Track = ({
   title,
@@ -13,22 +19,80 @@ export const Track = ({
   authorId = '1',
   albumId = '1',
 }: TrackProps) => {
+  const { setCurrentTrack, setPlaylist, state } = usePlayer();
+
+  // Получаем состояние из Redux
+  const reduxPlayerState = useAppSelector((state) => state.player);
+
+  // Проверяем, является ли этот трек текущим
+  const isCurrentTrack = reduxPlayerState.currentTrack?.trackId === trackId;
+  const isPlaying = reduxPlayerState.isPlaying && isCurrentTrack;
+
+  // Обработчик клика по треку для воспроизведения
+  const handleTrackClick = useCallback(() => {
+    // Создаем объект трека для плеера
+    const trackData = {
+      title,
+      titleSpan,
+      author,
+      album,
+      time,
+      genre,
+      trackId,
+      authorId,
+      albumId,
+      src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3', // Добавляем URL аудиофайла
+    };
+
+    setCurrentTrack(trackData);
+
+    // Если плейлист пустой, создаем его из текущего трека
+    if (state.playlist.length === 0) {
+      setPlaylist([trackData]);
+    }
+  }, [
+    title,
+    titleSpan,
+    author,
+    album,
+    time,
+    genre,
+    trackId,
+    authorId,
+    albumId,
+    setCurrentTrack,
+    setPlaylist,
+    state.playlist.length,
+  ]);
+
   return (
     <div className={styles.playlistItem} data-genre={genre}>
       <div className={styles.playlistTrack}>
         <div className={styles.trackTitle}>
           <div className={styles.trackTitleImage}>
-            <svg className={styles.trackTitleSvg}>
-              <use href="/img/icon/sprite.svg#icon-note"></use>
-            </svg>
+            {isCurrentTrack ? (
+              <div
+                className={cn(styles.currentTrackIndicator, {
+                  [styles.playing]: isPlaying,
+                })}
+              />
+            ) : (
+              <svg className={styles.trackTitleSvg}>
+                <use href="/img/icon/sprite.svg#icon-note"></use>
+              </svg>
+            )}
           </div>
           <div className={styles.trackTitleText}>
-            <Link className={styles.trackTitleLink} href={`/track/${trackId}`}>
+            <button
+              className={styles.trackTitleLink}
+              onClick={handleTrackClick}
+              type="button"
+            >
               {title}{' '}
               {titleSpan && (
                 <span className={styles.trackTitleSpan}>{titleSpan}</span>
               )}
-            </Link>
+            </button>
           </div>
         </div>
         <div className={styles.trackAuthor}>
