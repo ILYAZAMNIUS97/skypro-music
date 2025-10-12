@@ -21,8 +21,8 @@ export const Sidebar = () => {
                 className={styles.sidebarImg}
                 src="/img/playlist01.png"
                 alt="day's playlist"
-                width={250}
-                height={170}
+                fill
+                sizes="250px"
               />
             </Link>
           </div>
@@ -32,8 +32,8 @@ export const Sidebar = () => {
                 className={styles.sidebarImg}
                 src="/img/playlist02.png"
                 alt="day's playlist"
-                width={250}
-                height={170}
+                fill
+                sizes="250px"
               />
             </Link>
           </div>
@@ -43,8 +43,8 @@ export const Sidebar = () => {
                 className={styles.sidebarImg}
                 src="/img/playlist03.png"
                 alt="day's playlist"
-                width={250}
-                height={170}
+                fill
+                sizes="250px"
               />
             </Link>
           </div>
