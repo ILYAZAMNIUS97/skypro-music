@@ -8,17 +8,18 @@ import { type TrackProps } from '../../types/track';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { useAppSelector } from '@/store/hooks';
 
-export const Track = ({
-  title,
-  titleSpan,
-  author,
-  album,
-  time,
-  genre,
-  trackId = '1',
-  authorId = '1',
-  albumId = '1',
-}: TrackProps) => {
+export const Track = ({ track }: TrackProps) => {
+  const {
+    trackId = '1',
+    title,
+    titleSpan,
+    author,
+    authorId = '1',
+    album,
+    albumId = '1',
+    time,
+    genre,
+  } = track;
   const { setCurrentTrack, setPlaylist, state } = usePlayer();
 
   // Получаем состояние из Redux

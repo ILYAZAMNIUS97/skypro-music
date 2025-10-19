@@ -30,15 +30,12 @@ export const Playlist = () => {
         {tracks.map((track, index) => (
           <Track
             key={index}
-            title={track.title}
-            titleSpan={track.titleSpan}
-            author={track.author}
-            album={track.album}
-            time={track.time}
-            genre={track.genre}
-            trackId={index.toString()}
-            authorId={index.toString()}
-            albumId={index.toString()}
+            track={{
+              ...track,
+              trackId: index.toString(),
+              authorId: index.toString(),
+              albumId: index.toString(),
+            }}
           />
         ))}
       </div>
