@@ -29,25 +29,31 @@ export const Track = ({ track }: TrackProps) => {
 
   // Обработчик клика по треку для воспроизведения
   const handleTrackClick = () => {
-    // Создаем объект трека для плеера
-    const trackData = {
-      title,
-      titleSpan,
-      author,
-      album,
-      time,
-      genre,
-      trackId,
-      authorId,
-      albumId,
-      src: 'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3', // Тестовый аудиофайл
-    };
+    // Проверяем, что это трек "Guilt" - единственный с реальным аудиофайлом
+    if (title === 'Guilt') {
+      // Создаем объект трека для плеера
+      const trackData = {
+        title,
+        titleSpan,
+        author,
+        album,
+        time,
+        genre,
+        trackId,
+        authorId,
+        albumId,
+        src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3', // Оригинальный URL
+      };
 
-    // Создаем плейлист из текущего трека
-    const playlist = [trackData];
+      // Создаем плейлист только из этого трека
+      const playlist = [trackData];
 
-    // Запускаем воспроизведение с плейлистом
-    dispatch(playTrackWithPlaylist({ track: trackData, playlist }));
+      // Запускаем воспроизведение с плейлистом
+      dispatch(playTrackWithPlaylist({ track: trackData, playlist }));
+    } else {
+      // Для всех остальных треков показываем alert
+      alert('Еще не реализовано');
+    }
   };
 
   return (

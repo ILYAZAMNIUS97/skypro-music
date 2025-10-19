@@ -11,7 +11,6 @@ import {
   toggleRepeat,
   setIsPlaying,
   setDuration,
-  nextTrack,
 } from '@/store/playerSlice';
 
 export const Player = () => {
@@ -73,8 +72,8 @@ export const Player = () => {
   }, []);
 
   const handleNextClick = useCallback(() => {
-    dispatch(nextTrack());
-  }, [dispatch]);
+    alert('Еще не реализовано');
+  }, []);
 
   const handleRepeatClick = useCallback(() => {
     dispatch(toggleRepeat());
@@ -88,6 +87,9 @@ export const Player = () => {
   const handleProgressChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newTime = parseFloat(e.target.value);
+      if (audioRef.current) {
+        audioRef.current.currentTime = newTime;
+      }
       dispatch(setCurrentTime(newTime));
     },
     [dispatch],
@@ -122,13 +124,8 @@ export const Player = () => {
           console.log('Ошибка при повторном воспроизведении:', error);
         });
       } else {
-        // При завершении трека переходим к следующему
-        if (state.currentTrackIndex < state.playlist.length - 1) {
-          dispatch(nextTrack());
-        } else {
-          // Если это последний трек в плейлисте, показываем alert
-          alert('Еще не реализовано');
-        }
+        // При завершении трека показываем alert, так как у нас только один трек
+        alert('Еще не реализовано');
       }
     };
 
@@ -151,10 +148,6 @@ export const Player = () => {
 
     const handleCanPlay = () => {
       console.log('Аудио готово к воспроизведению');
-      // Если трек должен играть, но еще не играет, запускаем воспроизведение
-      if (state.isPlaying && audio.paused) {
-        play();
-      }
     };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
@@ -176,16 +169,9 @@ export const Player = () => {
       audio.removeEventListener('loadeddata', handleLoadedData);
       audio.removeEventListener('canplay', handleCanPlay);
     };
-  }, [
-    state.isRepeat,
-    state.currentTrackIndex,
-    state.playlist.length,
-    state.isPlaying,
-    dispatch,
-    play,
-  ]);
+  }, [state.isRepeat, dispatch]);
 
-  // Обновляем src аудио элемента при смене трека
+  // Обновляем src аудио элемента при смене трека и автоматически запускаем воспроизведение
   useEffect(() => {
     if (audioRef.current && state.currentTrack) {
       if (state.currentTrack.src) {
@@ -198,6 +184,16 @@ export const Player = () => {
         audioRef.current.src = state.currentTrack.src;
         // Сбрасываем время воспроизведения при смене трека
         audioRef.current.currentTime = 0;
+
+        // Автоматически запускаем воспроизведение, если трек должен играть
+        if (state.isPlaying) {
+          // Небольшая задержка для загрузки аудио
+          const timer = setTimeout(() => {
+            play();
+          }, 200);
+
+          return () => clearTimeout(timer);
+        }
       } else {
         console.log(
           'Трек выбран:',
@@ -206,29 +202,7 @@ export const Player = () => {
         );
       }
     }
-  }, [state.currentTrack]);
-
-  // Автоматически запускаем воспроизведение при изменении состояния isPlaying
-  useEffect(() => {
-    if (audioRef.current && state.currentTrack && state.isPlaying) {
-      console.log(
-        'Попытка автоматического воспроизведения трека:',
-        state.currentTrack.title,
-      );
-      console.log('Состояние аудио элемента:', {
-        readyState: audioRef.current.readyState,
-        src: audioRef.current.src,
-        paused: audioRef.current.paused,
-      });
-
-      // Небольшая задержка для того, чтобы аудио элемент успел загрузиться
-      const timer = setTimeout(() => {
-        play();
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-  }, [state.isPlaying, state.currentTrack, play]);
+  }, [state.currentTrack, state.isPlaying, play]);
 
   // Обновляем громкость
   useEffect(() => {

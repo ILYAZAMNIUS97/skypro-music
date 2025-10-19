@@ -61,9 +61,23 @@ export const playerSlice = createSlice({
     nextTrack: (state) => {
       if (state.playlist.length === 0) return;
 
-      let nextIndex = state.currentTrackIndex + 1;
-      if (nextIndex >= state.playlist.length) {
-        nextIndex = state.isRepeat ? 0 : state.currentTrackIndex;
+      let nextIndex;
+      if (state.isShuffle) {
+        // Случайный трек при включенном перемешивании
+        nextIndex = Math.floor(Math.random() * state.playlist.length);
+        // Если случайно выбрали тот же трек, берем следующий
+        if (
+          nextIndex === state.currentTrackIndex &&
+          state.playlist.length > 1
+        ) {
+          nextIndex = (state.currentTrackIndex + 1) % state.playlist.length;
+        }
+      } else {
+        // Обычная последовательность
+        nextIndex = state.currentTrackIndex + 1;
+        if (nextIndex >= state.playlist.length) {
+          nextIndex = state.isRepeat ? 0 : state.currentTrackIndex;
+        }
       }
 
       state.currentTrack = state.playlist[nextIndex];
@@ -73,9 +87,26 @@ export const playerSlice = createSlice({
     prevTrack: (state) => {
       if (state.playlist.length === 0) return;
 
-      let prevIndex = state.currentTrackIndex - 1;
-      if (prevIndex < 0) {
-        prevIndex = state.isRepeat ? state.playlist.length - 1 : 0;
+      let prevIndex;
+      if (state.isShuffle) {
+        // Случайный трек при включенном перемешивании
+        prevIndex = Math.floor(Math.random() * state.playlist.length);
+        // Если случайно выбрали тот же трек, берем предыдущий
+        if (
+          prevIndex === state.currentTrackIndex &&
+          state.playlist.length > 1
+        ) {
+          prevIndex =
+            state.currentTrackIndex === 0
+              ? state.playlist.length - 1
+              : state.currentTrackIndex - 1;
+        }
+      } else {
+        // Обычная последовательность
+        prevIndex = state.currentTrackIndex - 1;
+        if (prevIndex < 0) {
+          prevIndex = state.isRepeat ? state.playlist.length - 1 : 0;
+        }
       }
 
       state.currentTrack = state.playlist[prevIndex];
