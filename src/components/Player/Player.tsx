@@ -1,38 +1,84 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import cn from 'classnames';
 import Link from 'next/link';
 import styles from './Player.module.css';
-import { usePlayer } from '@/contexts/PlayerContext';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import {
+  setCurrentTime,
+  setVolume,
+  toggleRepeat,
+  setIsPlaying,
+  setDuration,
+  nextTrack,
+} from '@/store/playerSlice';
 
 export const Player = () => {
-  const { state, togglePlay, setCurrentTime, setVolume, toggleRepeat } =
-    usePlayer();
+  const dispatch = useAppDispatch();
+  const state = useAppSelector((state) => state.player);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Получаем состояние из Redux
-  const reduxPlayerState = useAppSelector((state) => state.player);
+  // Функции для управления плеером
+  const play = useCallback(async () => {
+    if (audioRef.current) {
+      try {
+        console.log(
+          'Попытка воспроизведения, readyState:',
+          audioRef.current.readyState,
+        );
+        console.log('Текущий src:', audioRef.current.src);
+
+        // Проверяем, что аудио элемент готов к воспроизведению
+        if (audioRef.current.readyState >= 2) {
+          // HAVE_CURRENT_DATA
+          console.log('Начинаем воспроизведение...');
+          await audioRef.current.play();
+          dispatch(setIsPlaying(true));
+          console.log('Воспроизведение началось');
+        } else {
+          console.log(
+            'Аудио элемент еще не готов к воспроизведению, readyState:',
+            audioRef.current.readyState,
+          );
+        }
+      } catch (error) {
+        console.log('Ошибка воспроизведения:', error);
+        // Если воспроизведение не удалось, не меняем состояние
+      }
+    }
+  }, [dispatch]);
+
+  const pause = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      dispatch(setIsPlaying(false));
+    }
+  }, [dispatch]);
 
   // Обработчики для кнопок управления
   const handlePlayClick = useCallback(() => {
     // Добавляем небольшую задержку для предотвращения быстрых переключений
     setTimeout(() => {
-      togglePlay();
+      if (state.isPlaying) {
+        pause();
+      } else {
+        play();
+      }
     }, 50);
-  }, [togglePlay]);
+  }, [state.isPlaying, play, pause]);
 
   const handlePrevClick = useCallback(() => {
     alert('Еще не реализовано');
   }, []);
 
   const handleNextClick = useCallback(() => {
-    alert('Еще не реализовано');
-  }, []);
+    dispatch(nextTrack());
+  }, [dispatch]);
 
   const handleRepeatClick = useCallback(() => {
-    toggleRepeat();
-  }, [toggleRepeat]);
+    dispatch(toggleRepeat());
+  }, [dispatch]);
 
   const handleShuffleClick = useCallback(() => {
     alert('Еще не реализовано');
@@ -42,19 +88,154 @@ export const Player = () => {
   const handleProgressChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newTime = parseFloat(e.target.value);
-      setCurrentTime(newTime);
+      dispatch(setCurrentTime(newTime));
     },
-    [setCurrentTime],
+    [dispatch],
   );
 
   // Обработчик для громкости
   const handleVolumeChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newVolume = parseFloat(e.target.value);
-      setVolume(newVolume);
+      dispatch(setVolume(newVolume));
     },
-    [setVolume],
+    [dispatch],
   );
+
+  // Обработчики событий аудио элемента
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      dispatch(setCurrentTime(audio.currentTime));
+    };
+
+    const handleDurationChange = () => {
+      dispatch(setDuration(audio.duration || 0));
+    };
+
+    const handleEnded = () => {
+      if (state.isRepeat) {
+        audio.currentTime = 0;
+        audio.play().catch((error) => {
+          console.log('Ошибка при повторном воспроизведении:', error);
+        });
+      } else {
+        // При завершении трека переходим к следующему
+        if (state.currentTrackIndex < state.playlist.length - 1) {
+          dispatch(nextTrack());
+        } else {
+          // Если это последний трек в плейлисте, показываем alert
+          alert('Еще не реализовано');
+        }
+      }
+    };
+
+    const handlePlay = () => {
+      dispatch(setIsPlaying(true));
+    };
+
+    const handlePause = () => {
+      dispatch(setIsPlaying(false));
+    };
+
+    const handleError = (error: Event) => {
+      console.log('Ошибка аудио элемента:', error);
+      dispatch(setIsPlaying(false));
+    };
+
+    const handleLoadedData = () => {
+      console.log('Аудио данные загружены, готов к воспроизведению');
+    };
+
+    const handleCanPlay = () => {
+      console.log('Аудио готово к воспроизведению');
+      // Если трек должен играть, но еще не играет, запускаем воспроизведение
+      if (state.isPlaying && audio.paused) {
+        play();
+      }
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('durationchange', handleDurationChange);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('loadeddata', handleLoadedData);
+    audio.addEventListener('canplay', handleCanPlay);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('durationchange', handleDurationChange);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('loadeddata', handleLoadedData);
+      audio.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [
+    state.isRepeat,
+    state.currentTrackIndex,
+    state.playlist.length,
+    state.isPlaying,
+    dispatch,
+    play,
+  ]);
+
+  // Обновляем src аудио элемента при смене трека
+  useEffect(() => {
+    if (audioRef.current && state.currentTrack) {
+      if (state.currentTrack.src) {
+        console.log(
+          'Загружаем трек:',
+          state.currentTrack.title,
+          'URL:',
+          state.currentTrack.src,
+        );
+        audioRef.current.src = state.currentTrack.src;
+        // Сбрасываем время воспроизведения при смене трека
+        audioRef.current.currentTime = 0;
+      } else {
+        console.log(
+          'Трек выбран:',
+          state.currentTrack.title,
+          'но URL аудиофайла не указан',
+        );
+      }
+    }
+  }, [state.currentTrack]);
+
+  // Автоматически запускаем воспроизведение при изменении состояния isPlaying
+  useEffect(() => {
+    if (audioRef.current && state.currentTrack && state.isPlaying) {
+      console.log(
+        'Попытка автоматического воспроизведения трека:',
+        state.currentTrack.title,
+      );
+      console.log('Состояние аудио элемента:', {
+        readyState: audioRef.current.readyState,
+        src: audioRef.current.src,
+        paused: audioRef.current.paused,
+      });
+
+      // Небольшая задержка для того, чтобы аудио элемент успел загрузиться
+      const timer = setTimeout(() => {
+        play();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [state.isPlaying, state.currentTrack, play]);
+
+  // Обновляем громкость
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = state.volume;
+    }
+  }, [state.volume]);
 
   // Форматирование времени (пока не используется, но может пригодиться)
   // const formatTime = useCallback((seconds: number) => {
@@ -91,7 +272,7 @@ export const Player = () => {
               <button
                 className={styles.playerBtnPrev}
                 onClick={handlePrevClick}
-                disabled={!reduxPlayerState.currentTrack}
+                disabled={!state.currentTrack}
               >
                 <svg className={styles.playerBtnPrevSvg}>
                   <use href="/img/icon/sprite.svg#icon-prev"></use>
@@ -101,11 +282,11 @@ export const Player = () => {
               <button
                 className={cn(styles.playerBtnPlay, styles.btn)}
                 onClick={handlePlayClick}
-                disabled={!reduxPlayerState.currentTrack}
+                disabled={!state.currentTrack}
               >
                 <svg className={styles.playerBtnPlaySvg}>
                   <use
-                    href={`/img/icon/sprite.svg#icon-${reduxPlayerState.isPlaying ? 'pause' : 'play'}`}
+                    href={`/img/icon/sprite.svg#icon-${state.isPlaying ? 'pause' : 'play'}`}
                   ></use>
                 </svg>
               </button>
@@ -113,7 +294,7 @@ export const Player = () => {
               <button
                 className={styles.playerBtnNext}
                 onClick={handleNextClick}
-                disabled={!reduxPlayerState.currentTrack}
+                disabled={!state.currentTrack}
               >
                 <svg className={styles.playerBtnNextSvg}>
                   <use href="/img/icon/sprite.svg#icon-next"></use>
@@ -155,24 +336,24 @@ export const Player = () => {
                   <Link
                     className={styles.trackPlayAuthorLink}
                     href={
-                      reduxPlayerState.currentTrack
-                        ? `/track/${reduxPlayerState.currentTrack.trackId || '1'}`
+                      state.currentTrack
+                        ? `/track/${state.currentTrack.trackId || '1'}`
                         : '#'
                     }
                   >
-                    {reduxPlayerState.currentTrack?.title || 'Выберите трек'}
+                    {state.currentTrack?.title || 'Выберите трек'}
                   </Link>
                 </div>
                 <div className={styles.trackPlayAlbum}>
                   <Link
                     className={styles.trackPlayAlbumLink}
                     href={
-                      reduxPlayerState.currentTrack
-                        ? `/author/${reduxPlayerState.currentTrack.authorId || '1'}`
+                      state.currentTrack
+                        ? `/author/${state.currentTrack.authorId || '1'}`
                         : '#'
                     }
                   >
-                    {reduxPlayerState.currentTrack?.author || 'Исполнитель'}
+                    {state.currentTrack?.author || 'Исполнитель'}
                   </Link>
                 </div>
               </div>
@@ -215,6 +396,8 @@ export const Player = () => {
           </div>
         </div>
       </div>
+      {/* Скрытый аудио элемент */}
+      <audio ref={audioRef} preload="metadata" style={{ display: 'none' }} />
     </div>
   );
 };

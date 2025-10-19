@@ -4,8 +4,8 @@ import Link from 'next/link';
 import cn from 'classnames';
 import styles from './Track.module.css';
 import { type TrackProps } from '../../types/track';
-import { usePlayer } from '@/contexts/PlayerContext';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { playTrackWithPlaylist } from '@/store/playerSlice';
 
 export const Track = ({ track }: TrackProps) => {
   const {
@@ -19,14 +19,13 @@ export const Track = ({ track }: TrackProps) => {
     time,
     genre,
   } = track;
-  const { playTrack, setPlaylist, state } = usePlayer();
 
-  // Получаем состояние из Redux
-  const reduxPlayerState = useAppSelector((state) => state.player);
+  const dispatch = useAppDispatch();
+  const state = useAppSelector((state) => state.player);
 
   // Проверяем, является ли этот трек текущим
-  const isCurrentTrack = reduxPlayerState.currentTrack?.trackId === trackId;
-  const isPlaying = reduxPlayerState.isPlaying && isCurrentTrack;
+  const isCurrentTrack = state.currentTrack?.trackId === trackId;
+  const isPlaying = state.isPlaying && isCurrentTrack;
 
   // Обработчик клика по треку для воспроизведения
   const handleTrackClick = () => {
@@ -41,16 +40,14 @@ export const Track = ({ track }: TrackProps) => {
       trackId,
       authorId,
       albumId,
-      src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3', // Добавляем URL аудиофайла
+      src: 'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3', // Тестовый аудиофайл
     };
 
-    // Если плейлист пустой, создаем его из текущего трека
-    if (state.playlist.length === 0) {
-      setPlaylist([trackData]);
-    }
+    // Создаем плейлист из текущего трека
+    const playlist = [trackData];
 
-    // Запускаем воспроизведение трека
-    playTrack(trackData);
+    // Запускаем воспроизведение с плейлистом
+    dispatch(playTrackWithPlaylist({ track: trackData, playlist }));
   };
 
   return (

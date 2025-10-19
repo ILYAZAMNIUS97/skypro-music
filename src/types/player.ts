@@ -11,19 +11,3 @@ export interface PlayerState {
   playlist: Track[];
   currentTrackIndex: number;
 }
-
-export interface PlayerContextType {
-  state: PlayerState;
-  play: () => void;
-  pause: () => void;
-  togglePlay: () => void;
-  nextTrack: () => void;
-  prevTrack: () => void;
-  setCurrentTrack: (track: Track, index?: number) => void;
-  playTrack: (track: Track, index?: number) => void;
-  setVolume: (volume: number) => void;
-  setCurrentTime: (time: number) => void;
-  toggleRepeat: () => void;
-  toggleShuffle: () => void;
-  setPlaylist: (tracks: Track[]) => void;
-}

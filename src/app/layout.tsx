@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import '@/app/globals.css';
-import { PlayerProvider } from '@/contexts/PlayerContext';
 import { ReduxProvider } from '@/components/ReduxProvider/ReduxProvider';
 
 const montserrat = Montserrat({
@@ -24,9 +23,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={montserrat.variable}>
-        <ReduxProvider>
-          <PlayerProvider>{children}</PlayerProvider>
-        </ReduxProvider>
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );

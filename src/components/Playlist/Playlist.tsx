@@ -4,15 +4,16 @@ import { useEffect } from 'react';
 import { Track } from '../Track/Track';
 import styles from './Playlist.module.css';
 import { tracks } from '../../data/tracks';
-import { usePlayer } from '@/contexts/PlayerContext';
+import { useAppDispatch } from '@/store/hooks';
+import { setPlaylist } from '@/store/playerSlice';
 
 export const Playlist = () => {
-  const { setPlaylist } = usePlayer();
+  const dispatch = useAppDispatch();
 
   // Инициализируем плейлист при загрузке компонента
   useEffect(() => {
-    setPlaylist(tracks);
-  }, [setPlaylist]);
+    dispatch(setPlaylist(tracks));
+  }, [dispatch]);
 
   return (
     <div className={styles.content}>
