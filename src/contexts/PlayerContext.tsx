@@ -15,6 +15,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   setCurrentTrack as setReduxCurrentTrack,
   setIsPlaying as setReduxIsPlaying,
+  playTrack as reduxPlayTrack,
 } from '@/store/playerSlice';
 
 // Начальное состояние плеера
@@ -193,7 +194,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [state.isPlaying, play, pause]);
 
   const nextTrack = () => {
-    dispatch({ type: 'NEXT_TRACK' });
+    if (state.playlist.length === 0) {
+      alert('Еще не реализовано');
+      return;
+    }
+
+    const nextIndex = state.currentTrackIndex + 1;
+    if (nextIndex >= state.playlist.length) {
+      alert('Еще не реализовано');
+      return;
+    }
+
+    const nextTrackData = state.playlist[nextIndex];
+    playTrack(nextTrackData, nextIndex);
   };
 
   const prevTrack = () => {
@@ -214,6 +227,26 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       reduxDispatch(setReduxCurrentTrack(track));
     },
     [state.playlist, reduxDispatch],
+  );
+
+  const playTrack = useCallback(
+    (track: Track, index?: number) => {
+      const trackIndex =
+        index !== undefined
+          ? index
+          : state.playlist.findIndex((t) => t.trackId === track.trackId);
+      dispatch({
+        type: 'SET_CURRENT_TRACK',
+        payload: { track, index: trackIndex },
+      });
+      // Синхронизируем с Redux и запускаем воспроизведение
+      reduxDispatch(reduxPlayTrack(track));
+      // Автоматически запускаем воспроизведение
+      setTimeout(() => {
+        play();
+      }, 100);
+    },
+    [state.playlist, reduxDispatch, play],
   );
 
   const setVolume = (volume: number) => {
@@ -262,7 +295,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           console.log('Ошибка при повторном воспроизведении:', error);
         });
       } else {
-        nextTrack();
+        // При завершении трека показываем alert
+        alert('Еще не реализовано');
       }
     };
 
@@ -341,6 +375,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     nextTrack,
     prevTrack,
     setCurrentTrack,
+    playTrack,
     setVolume,
     setCurrentTime,
     toggleRepeat,

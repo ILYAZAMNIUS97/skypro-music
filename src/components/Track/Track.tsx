@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback } from 'react';
 import cn from 'classnames';
 import styles from './Track.module.css';
 import { type TrackProps } from '../../types/track';
@@ -20,7 +19,7 @@ export const Track = ({ track }: TrackProps) => {
     time,
     genre,
   } = track;
-  const { setCurrentTrack, setPlaylist, state } = usePlayer();
+  const { playTrack, setPlaylist, state } = usePlayer();
 
   // Получаем состояние из Redux
   const reduxPlayerState = useAppSelector((state) => state.player);
@@ -30,7 +29,7 @@ export const Track = ({ track }: TrackProps) => {
   const isPlaying = reduxPlayerState.isPlaying && isCurrentTrack;
 
   // Обработчик клика по треку для воспроизведения
-  const handleTrackClick = useCallback(() => {
+  const handleTrackClick = () => {
     // Создаем объект трека для плеера
     const trackData = {
       title,
@@ -45,26 +44,14 @@ export const Track = ({ track }: TrackProps) => {
       src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3', // Добавляем URL аудиофайла
     };
 
-    setCurrentTrack(trackData);
-
     // Если плейлист пустой, создаем его из текущего трека
     if (state.playlist.length === 0) {
       setPlaylist([trackData]);
     }
-  }, [
-    title,
-    titleSpan,
-    author,
-    album,
-    time,
-    genre,
-    trackId,
-    authorId,
-    albumId,
-    setCurrentTrack,
-    setPlaylist,
-    state.playlist.length,
-  ]);
+
+    // Запускаем воспроизведение трека
+    playTrack(trackData);
+  };
 
   return (
     <div className={styles.playlistItem} data-genre={genre}>

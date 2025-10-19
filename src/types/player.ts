@@ -20,6 +20,7 @@ export interface PlayerContextType {
   nextTrack: () => void;
   prevTrack: () => void;
   setCurrentTrack: (track: Track, index?: number) => void;
+  playTrack: (track: Track, index?: number) => void;
   setVolume: (volume: number) => void;
   setCurrentTime: (time: number) => void;
   toggleRepeat: () => void;
