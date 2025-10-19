@@ -1,16 +1,18 @@
 'use client';
 
-import { useCallback, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import cn from 'classnames';
 import Link from 'next/link';
 import styles from './Player.module.css';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
   setCurrentTime,
-  setVolume,
   toggleRepeat,
-  setIsPlaying,
   setDuration,
+  playAudio,
+  pauseAudio,
+  setProgress,
+  setVolumeLevel,
 } from '@/store/playerSlice';
 
 export const Player = () => {
@@ -19,7 +21,7 @@ export const Player = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Функции для управления плеером
-  const play = useCallback(async () => {
+  const play = async () => {
     if (audioRef.current) {
       try {
         console.log(
@@ -33,7 +35,7 @@ export const Player = () => {
           // HAVE_CURRENT_DATA
           console.log('Начинаем воспроизведение...');
           await audioRef.current.play();
-          dispatch(setIsPlaying(true));
+          dispatch(playAudio());
           console.log('Воспроизведение началось');
         } else {
           console.log(
@@ -46,17 +48,17 @@ export const Player = () => {
         // Если воспроизведение не удалось, не меняем состояние
       }
     }
-  }, [dispatch]);
+  };
 
-  const pause = useCallback(() => {
+  const pause = () => {
     if (audioRef.current) {
       audioRef.current.pause();
-      dispatch(setIsPlaying(false));
+      dispatch(pauseAudio());
     }
-  }, [dispatch]);
+  };
 
   // Обработчики для кнопок управления
-  const handlePlayClick = useCallback(() => {
+  const handlePlayClick = () => {
     // Добавляем небольшую задержку для предотвращения быстрых переключений
     setTimeout(() => {
       if (state.isPlaying) {
@@ -65,44 +67,38 @@ export const Player = () => {
         play();
       }
     }, 50);
-  }, [state.isPlaying, play, pause]);
+  };
 
-  const handlePrevClick = useCallback(() => {
+  const handlePrevClick = () => {
     alert('Еще не реализовано');
-  }, []);
+  };
 
-  const handleNextClick = useCallback(() => {
+  const handleNextClick = () => {
     alert('Еще не реализовано');
-  }, []);
+  };
 
-  const handleRepeatClick = useCallback(() => {
+  const handleRepeatClick = () => {
     dispatch(toggleRepeat());
-  }, [dispatch]);
+  };
 
-  const handleShuffleClick = useCallback(() => {
+  const handleShuffleClick = () => {
     alert('Еще не реализовано');
-  }, []);
+  };
 
   // Обработчик для прогресс-бара
-  const handleProgressChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newTime = parseFloat(e.target.value);
-      if (audioRef.current) {
-        audioRef.current.currentTime = newTime;
-      }
-      dispatch(setCurrentTime(newTime));
-    },
-    [dispatch],
-  );
+  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+    dispatch(setProgress(newTime));
+  };
 
   // Обработчик для громкости
-  const handleVolumeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newVolume = parseFloat(e.target.value);
-      dispatch(setVolume(newVolume));
-    },
-    [dispatch],
-  );
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    dispatch(setVolumeLevel(newVolume));
+  };
 
   // Обработчики событий аудио элемента
   useEffect(() => {
@@ -130,16 +126,16 @@ export const Player = () => {
     };
 
     const handlePlay = () => {
-      dispatch(setIsPlaying(true));
+      dispatch(playAudio());
     };
 
     const handlePause = () => {
-      dispatch(setIsPlaying(false));
+      dispatch(pauseAudio());
     };
 
     const handleError = (error: Event) => {
       console.log('Ошибка аудио элемента:', error);
-      dispatch(setIsPlaying(false));
+      dispatch(pauseAudio());
     };
 
     const handleLoadedData = () => {
@@ -188,8 +184,17 @@ export const Player = () => {
         // Автоматически запускаем воспроизведение, если трек должен играть
         if (state.isPlaying) {
           // Небольшая задержка для загрузки аудио
-          const timer = setTimeout(() => {
-            play();
+          const timer = setTimeout(async () => {
+            if (audioRef.current) {
+              try {
+                if (audioRef.current.readyState >= 2) {
+                  await audioRef.current.play();
+                  dispatch(playAudio());
+                }
+              } catch (error) {
+                console.log('Ошибка воспроизведения:', error);
+              }
+            }
           }, 200);
 
           return () => clearTimeout(timer);
@@ -202,7 +207,7 @@ export const Player = () => {
         );
       }
     }
-  }, [state.currentTrack, state.isPlaying, play]);
+  }, [state.currentTrack, state.isPlaying, dispatch]);
 
   // Обновляем громкость
   useEffect(() => {

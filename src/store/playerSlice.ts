@@ -138,6 +138,22 @@ export const playerSlice = createSlice({
     togglePlay: (state) => {
       state.isPlaying = !state.isPlaying;
     },
+    // Новые экшены для замены useCallback
+    playAudio: (state) => {
+      state.isPlaying = true;
+    },
+    pauseAudio: (state) => {
+      state.isPlaying = false;
+    },
+    setProgress: (state, action: PayloadAction<number>) => {
+      state.currentTime = action.payload;
+    },
+    setVolumeLevel: (state, action: PayloadAction<number>) => {
+      state.volume = Math.max(0, Math.min(1, action.payload));
+    },
+    togglePlayPause: (state) => {
+      state.isPlaying = !state.isPlaying;
+    },
   },
 });
 
@@ -155,5 +171,10 @@ export const {
   playTrack,
   playTrackWithPlaylist,
   togglePlay,
+  playAudio,
+  pauseAudio,
+  setProgress,
+  setVolumeLevel,
+  togglePlayPause,
 } = playerSlice.actions;
 export default playerSlice.reducer;
