@@ -58,16 +58,51 @@
   stroke: #4e4e4e;
 }
 
-.trackTitleText {
-  /* Added for proper text layout */
-}
-
 .trackTitleLink {
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
   color: #ffffff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.trackTitleLink:hover {
+  color: #acacac;
+}
+
+/* Индикатор текущего трека */
+.currentTrackIndicator {
+  width: 12px;
+  height: 12px;
+  background-color: #b672ff;
+  border-radius: 50%;
+  margin: auto;
+}
+
+/* Пульсирующая анимация для играющего трека */
+.currentTrackIndicator.playing {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .trackTitleSpan {

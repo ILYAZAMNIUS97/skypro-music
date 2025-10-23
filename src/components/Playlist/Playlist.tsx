@@ -1,8 +1,20 @@
+'use client';
+
+import { useEffect } from 'react';
 import { Track } from '../Track/Track';
 import styles from './Playlist.module.css';
 import { tracks } from '../../data/tracks';
+import { useAppDispatch } from '@/store/hooks';
+import { setPlaylist } from '@/store/playerSlice';
 
 export const Playlist = () => {
+  const dispatch = useAppDispatch();
+
+  // Инициализируем плейлист при загрузке компонента
+  useEffect(() => {
+    dispatch(setPlaylist(tracks));
+  }, [dispatch]);
+
   return (
     <div className={styles.content}>
       <div className={styles.contentTitle}>
@@ -19,12 +31,12 @@ export const Playlist = () => {
         {tracks.map((track, index) => (
           <Track
             key={index}
-            title={track.title}
-            titleSpan={track.titleSpan}
-            author={track.author}
-            album={track.album}
-            time={track.time}
-            genre={track.genre}
+            track={{
+              ...track,
+              trackId: index.toString(),
+              authorId: index.toString(),
+              albumId: index.toString(),
+            }}
           />
         ))}
       </div>

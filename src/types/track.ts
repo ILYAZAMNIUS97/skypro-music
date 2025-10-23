@@ -8,16 +8,9 @@ export interface Track {
   trackId?: string;
   authorId?: string;
   albumId?: string;
+  src?: string; // URL аудиофайла
 }
 
 export interface TrackProps {
-  title: string;
-  titleSpan?: string;
-  author: string;
-  album: string;
-  time: string;
-  genre: string;
-  trackId?: string;
-  authorId?: string;
-  albumId?: string;
+  track: Track;
 }
