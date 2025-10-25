@@ -5,6 +5,7 @@ import cn from 'classnames';
 import Link from 'next/link';
 import styles from './Player.module.css';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { ProgressBar } from '@/components/ProgressBar';
 import {
   setCurrentTime,
   toggleRepeat,
@@ -234,13 +235,12 @@ export const Player = () => {
       <div className={styles.barContent}>
         {/* Прогресс-бар */}
         <div className={styles.barPlayerProgress}>
-          <input
-            type="range"
-            min="0"
+          <ProgressBar
             max={state.duration || 0}
             value={state.currentTime}
+            step={1}
             onChange={handleProgressChange}
-            className={styles.progressBar}
+            readOnly={false}
           />
         </div>
 
