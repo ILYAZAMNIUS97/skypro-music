@@ -173,6 +173,7 @@ export const playerSlice = createSlice({
         state.currentTrack = state.playlist[nextIndex];
         state.currentTrackIndex = nextIndex;
         state.currentTime = 0;
+        state.isPlaying = true; // Автоматически запускаем воспроизведение
       }
     },
     prevTrack: (state) => {
@@ -211,6 +212,7 @@ export const playerSlice = createSlice({
         state.currentTrack = state.playlist[prevIndex];
         state.currentTrackIndex = prevIndex;
         state.currentTime = 0;
+        state.isPlaying = true; // Автоматически запускаем воспроизведение
       }
     },
     playTrack: (state, action: PayloadAction<Track>) => {

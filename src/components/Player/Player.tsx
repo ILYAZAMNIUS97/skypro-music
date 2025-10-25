@@ -335,21 +335,58 @@ export const Player = () => {
 
         // Автоматически запускаем воспроизведение, если трек должен играть
         if (state.isPlaying) {
-          // Небольшая задержка для загрузки аудио
-          const timer = setTimeout(async () => {
-            if (audioRef.current) {
+          // Функция для ожидания готовности аудио элемента
+          const waitForAudioReady = async () => {
+            if (!audioRef.current) return;
+
+            // Если аудио уже готово, запускаем воспроизведение
+            if (audioRef.current.readyState >= 2) {
               try {
-                if (audioRef.current.readyState >= 2) {
-                  await audioRef.current.play();
-                  dispatch(playAudio());
-                }
+                await audioRef.current.play();
+                dispatch(playAudio());
+                console.log('🎵 Автоматическое воспроизведение запущено');
               } catch (error) {
                 console.log('Ошибка воспроизведения:', error);
               }
+              return;
             }
-          }, 200);
 
-          return () => clearTimeout(timer);
+            // Если аудио еще не готово, ждем события canplay
+            const handleCanPlay = async () => {
+              if (audioRef.current) {
+                try {
+                  await audioRef.current.play();
+                  dispatch(playAudio());
+                  console.log(
+                    '🎵 Автоматическое воспроизведение запущено после ожидания',
+                  );
+                } catch (error) {
+                  console.log('Ошибка воспроизведения:', error);
+                }
+                audioRef.current.removeEventListener('canplay', handleCanPlay);
+              }
+            };
+
+            audioRef.current.addEventListener('canplay', handleCanPlay);
+
+            // Fallback: если через 3 секунды аудио все еще не готово, пробуем запустить
+            setTimeout(() => {
+              if (audioRef.current && audioRef.current.readyState >= 1) {
+                try {
+                  audioRef.current.play();
+                  dispatch(playAudio());
+                  console.log(
+                    '🎵 Автоматическое воспроизведение запущено (fallback)',
+                  );
+                } catch (error) {
+                  console.log('Ошибка воспроизведения (fallback):', error);
+                }
+              }
+            }, 3000);
+          };
+
+          // Небольшая задержка для загрузки аудио
+          setTimeout(waitForAudioReady, 200);
         }
       } else {
         console.log(
