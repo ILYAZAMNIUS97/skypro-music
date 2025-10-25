@@ -19,6 +19,7 @@ interface PlayerState {
   currentTrackIndex: number;
   isLoading: boolean;
   error: string | null;
+  pausedTime: number; // Время паузы для сохранения позиции
 }
 
 const initialState: PlayerState = {
@@ -34,6 +35,7 @@ const initialState: PlayerState = {
   currentTrackIndex: -1,
   isLoading: false,
   error: null,
+  pausedTime: 0,
 };
 
 // Асинхронные thunk'и для работы с API
@@ -106,7 +108,7 @@ export const playerSlice = createSlice({
     ) => {
       state.currentTrack = action.payload.track;
       state.currentTrackIndex = action.payload.index;
-      state.currentTime = 0;
+      state.currentTime = 0; // Всегда сбрасываем при смене трека
     },
     setIsPlaying: (state, action: PayloadAction<boolean>) => {
       state.isPlaying = action.payload;
@@ -172,7 +174,7 @@ export const playerSlice = createSlice({
       if (nextIndex >= 0 && nextIndex < state.playlist.length) {
         state.currentTrack = state.playlist[nextIndex];
         state.currentTrackIndex = nextIndex;
-        state.currentTime = 0;
+        state.currentTime = 0; // Всегда сбрасываем при смене трека
         state.isPlaying = true; // Автоматически запускаем воспроизведение
       }
     },
@@ -211,7 +213,7 @@ export const playerSlice = createSlice({
       if (prevIndex >= 0 && prevIndex < state.playlist.length) {
         state.currentTrack = state.playlist[prevIndex];
         state.currentTrackIndex = prevIndex;
-        state.currentTime = 0;
+        state.currentTime = 0; // Всегда сбрасываем при смене трека
         state.isPlaying = true; // Автоматически запускаем воспроизведение
       }
     },
@@ -222,7 +224,7 @@ export const playerSlice = createSlice({
       state.currentTrack = action.payload;
       state.currentTrackIndex = trackIndex;
       state.isPlaying = true;
-      state.currentTime = 0;
+      state.currentTime = 0; // Всегда сбрасываем при смене трека
     },
     playTrackWithPlaylist: (
       state,
@@ -235,7 +237,7 @@ export const playerSlice = createSlice({
       state.currentTrack = track;
       state.currentTrackIndex = trackIndex;
       state.isPlaying = true;
-      state.currentTime = 0;
+      state.currentTime = 0; // Всегда сбрасываем при смене трека
     },
     togglePlay: (state) => {
       state.isPlaying = !state.isPlaying;
@@ -258,6 +260,16 @@ export const playerSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    // Новые actions для правильного управления паузой/воспроизведением
+    pauseTrack: (state) => {
+      state.isPlaying = false;
+      state.pausedTime = state.currentTime; // Сохраняем текущую позицию при паузе
+    },
+    resumeTrack: (state) => {
+      state.isPlaying = true;
+      // Воспроизводим с сохраненной позиции
+      state.currentTime = state.pausedTime;
     },
   },
   extraReducers: (builder) => {
@@ -335,5 +347,7 @@ export const {
   setVolumeLevel,
   togglePlayPause,
   clearError,
+  pauseTrack,
+  resumeTrack,
 } = playerSlice.actions;
 export default playerSlice.reducer;

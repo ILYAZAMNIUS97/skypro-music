@@ -1,30 +1,29 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import cn from 'classnames';
 import Link from 'next/link';
 import styles from './Player.module.css';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { ProgressBar } from '@/components/ProgressBar';
 import {
-  setCurrentTime,
   toggleRepeat,
   toggleShuffle,
   setDuration,
-  playAudio,
-  pauseAudio,
-  setProgress,
   setVolumeLevel,
   fetchTracks,
   toggleFavorite,
   nextTrack,
   prevTrack,
+  pauseTrack,
+  resumeTrack,
 } from '@/store/playerSlice';
 
 export const Player = () => {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.player);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [currentTime, setCurrentTime] = useState(0);
 
   // Загружаем треки при монтировании компонента
   useEffect(() => {
@@ -48,7 +47,7 @@ export const Player = () => {
           // HAVE_CURRENT_DATA
           console.log('Начинаем воспроизведение...');
           await audioRef.current.play();
-          dispatch(playAudio());
+          dispatch(resumeTrack()); // Используем новый action для возобновления
           console.log('Воспроизведение началось');
         } else {
           console.log(
@@ -66,7 +65,7 @@ export const Player = () => {
   const pause = () => {
     if (audioRef.current) {
       audioRef.current.pause();
-      dispatch(pauseAudio());
+      dispatch(pauseTrack()); // Используем новый action для паузы
     }
   };
 
@@ -108,8 +107,8 @@ export const Player = () => {
     const newTime = parseFloat(e.target.value);
     if (audioRef.current) {
       audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
     }
-    dispatch(setProgress(newTime));
   };
 
   // Обработчик для громкости
@@ -147,7 +146,7 @@ export const Player = () => {
     if (!audio) return;
 
     const handleTimeUpdate = () => {
-      dispatch(setCurrentTime(audio.currentTime));
+      setCurrentTime(audio.currentTime);
 
       // Логируем приближение к концу трека для отладки
       if (state.duration > 0 && audio.currentTime > state.duration - 1) {
@@ -164,8 +163,8 @@ export const Player = () => {
         if (audio.currentTime >= state.duration - 0.1) {
           console.log('🎵 Достигли конца трека, перезапускаем...');
           audio.currentTime = 0;
-          dispatch(setCurrentTime(0));
-          dispatch(playAudio());
+          setCurrentTime(0); // Сбрасываем только при повторе трека
+          dispatch(resumeTrack());
 
           // Небольшая задержка для корректной работы
           setTimeout(() => {
@@ -208,8 +207,8 @@ export const Player = () => {
         // Повторяем текущий трек
         console.log('Повторяем текущий трек:', state.currentTrack?.title);
         audio.currentTime = 0;
-        dispatch(setCurrentTime(0)); // Обновляем состояние Redux
-        dispatch(playAudio()); // Обновляем состояние воспроизведения
+        setCurrentTime(0); // Сбрасываем только при повторе трека
+        dispatch(resumeTrack()); // Обновляем состояние воспроизведения
 
         // Небольшая задержка для корректной работы
         setTimeout(() => {
@@ -267,17 +266,17 @@ export const Player = () => {
 
     const handlePlay = () => {
       console.log('🎵 Аудио элемент начал воспроизведение');
-      dispatch(playAudio());
+      dispatch(resumeTrack());
     };
 
     const handlePause = () => {
       console.log('🎵 Аудио элемент приостановлен');
-      dispatch(pauseAudio());
+      dispatch(pauseTrack());
     };
 
     const handleError = (error: Event) => {
       console.log('🎵 Ошибка аудио элемента:', error);
-      dispatch(pauseAudio());
+      dispatch(pauseTrack());
     };
 
     const handleLoadedData = () => {
@@ -315,7 +314,7 @@ export const Player = () => {
     dispatch,
   ]);
 
-  // Обновляем src аудио элемента при смене трека и автоматически запускаем воспроизведение
+  // Обновляем src аудио элемента при смене трека
   useEffect(() => {
     if (audioRef.current && state.currentTrack) {
       if (state.currentTrack.src) {
@@ -324,79 +323,27 @@ export const Player = () => {
           state.currentTrack.title,
           'URL:',
           state.currentTrack.src,
-          'Режим повтора:',
-          state.repeatMode,
-          'Состояние воспроизведения:',
-          state.isPlaying,
         );
         audioRef.current.src = state.currentTrack.src;
-        // Сбрасываем время воспроизведения при смене трека
+        // Всегда начинаем с начала при смене трека
         audioRef.current.currentTime = 0;
-
-        // Автоматически запускаем воспроизведение, если трек должен играть
-        if (state.isPlaying) {
-          // Функция для ожидания готовности аудио элемента
-          const waitForAudioReady = async () => {
-            if (!audioRef.current) return;
-
-            // Если аудио уже готово, запускаем воспроизведение
-            if (audioRef.current.readyState >= 2) {
-              try {
-                await audioRef.current.play();
-                dispatch(playAudio());
-                console.log('🎵 Автоматическое воспроизведение запущено');
-              } catch (error) {
-                console.log('Ошибка воспроизведения:', error);
-              }
-              return;
-            }
-
-            // Если аудио еще не готово, ждем события canplay
-            const handleCanPlay = async () => {
-              if (audioRef.current) {
-                try {
-                  await audioRef.current.play();
-                  dispatch(playAudio());
-                  console.log(
-                    '🎵 Автоматическое воспроизведение запущено после ожидания',
-                  );
-                } catch (error) {
-                  console.log('Ошибка воспроизведения:', error);
-                }
-                audioRef.current.removeEventListener('canplay', handleCanPlay);
-              }
-            };
-
-            audioRef.current.addEventListener('canplay', handleCanPlay);
-
-            // Fallback: если через 3 секунды аудио все еще не готово, пробуем запустить
-            setTimeout(() => {
-              if (audioRef.current && audioRef.current.readyState >= 1) {
-                try {
-                  audioRef.current.play();
-                  dispatch(playAudio());
-                  console.log(
-                    '🎵 Автоматическое воспроизведение запущено (fallback)',
-                  );
-                } catch (error) {
-                  console.log('Ошибка воспроизведения (fallback):', error);
-                }
-              }
-            }, 3000);
-          };
-
-          // Небольшая задержка для загрузки аудио
-          setTimeout(waitForAudioReady, 200);
-        }
-      } else {
-        console.log(
-          'Трек выбран:',
-          state.currentTrack.title,
-          'но URL аудиофайла не указан',
-        );
+        setCurrentTime(0);
       }
     }
-  }, [state.currentTrack, state.isPlaying, state.repeatMode, dispatch]);
+  }, [state.currentTrack]);
+
+  // Управляем воспроизведением/паузой
+  useEffect(() => {
+    if (audioRef.current) {
+      if (state.isPlaying) {
+        audioRef.current.play().catch((error) => {
+          console.log('Ошибка воспроизведения:', error);
+        });
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [state.isPlaying]);
 
   // Обновляем громкость
   useEffect(() => {
@@ -427,8 +374,8 @@ export const Player = () => {
       const audio = audioRef.current;
       if (audio) {
         audio.currentTime = 0;
-        dispatch(setCurrentTime(0));
-        dispatch(playAudio());
+        setCurrentTime(0); // Сбрасываем только при повторе трека
+        dispatch(resumeTrack());
 
         // Небольшая задержка для корректной работы
         setTimeout(() => {
@@ -602,7 +549,7 @@ export const Player = () => {
         <div className={styles.barPlayerProgress}>
           <ProgressBar
             max={state.duration || 0}
-            value={state.currentTime}
+            value={currentTime}
             step={1}
             onChange={handleProgressChange}
             readOnly={false}
