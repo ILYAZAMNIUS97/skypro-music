@@ -4,6 +4,7 @@
   left: 0;
   width: 100%;
   background: rgba(28, 28, 28, 0.5);
+  border-top: none;
 }
 
 .loadingMessage {
@@ -52,13 +53,19 @@
   -webkit-box-direction: normal;
   -ms-flex-direction: column;
   flex-direction: column;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .barPlayerProgress {
   width: 100%;
   height: 5px;
-  background: #2e2e2e;
+  background: transparent;
   position: relative;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .progressBar {
@@ -68,6 +75,9 @@
   background: transparent;
   outline: none;
   cursor: pointer;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .progressBar::-webkit-slider-runnable-track {

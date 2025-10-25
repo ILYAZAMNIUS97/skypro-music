@@ -12,6 +12,8 @@
   position: relative;
   overflow: hidden;
   transition: 0.2s;
+  border: none;
+  padding: 0;
 }
 
 .styledProgressInput:hover {
