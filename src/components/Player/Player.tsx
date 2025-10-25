@@ -9,6 +9,7 @@ import { ProgressBar } from '@/components/ProgressBar';
 import {
   setCurrentTime,
   toggleRepeat,
+  toggleShuffle,
   setDuration,
   playAudio,
   pauseAudio,
@@ -99,8 +100,7 @@ export const Player = () => {
   };
 
   const handleShuffleClick = () => {
-    // TODO: Реализовать перемешивание
-    alert('Перемешивание будет реализовано в следующих версиях');
+    dispatch(toggleShuffle());
   };
 
   // Обработчик для прогресс-бара
