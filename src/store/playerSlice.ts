@@ -13,6 +13,7 @@ interface PlayerState {
   duration: number;
   volume: number;
   isRepeat: boolean;
+  repeatMode: 'off' | 'one' | 'all'; // Режимы повтора: выключен, один трек, весь плейлист
   isShuffle: boolean;
   playlist: Track[];
   currentTrackIndex: number;
@@ -27,6 +28,7 @@ const initialState: PlayerState = {
   duration: 0,
   volume: 1,
   isRepeat: false,
+  repeatMode: 'off',
   isShuffle: false,
   playlist: [],
   currentTrackIndex: -1,
@@ -119,7 +121,17 @@ export const playerSlice = createSlice({
       state.volume = Math.max(0, Math.min(1, action.payload));
     },
     toggleRepeat: (state) => {
-      state.isRepeat = !state.isRepeat;
+      // Циклическое переключение режимов повтора: off -> one -> all -> off
+      if (state.repeatMode === 'off') {
+        state.repeatMode = 'one';
+        state.isRepeat = true;
+      } else if (state.repeatMode === 'one') {
+        state.repeatMode = 'all';
+        state.isRepeat = true;
+      } else {
+        state.repeatMode = 'off';
+        state.isRepeat = false;
+      }
     },
     toggleShuffle: (state) => {
       state.isShuffle = !state.isShuffle;
@@ -145,13 +157,23 @@ export const playerSlice = createSlice({
         // Обычная последовательность
         nextIndex = state.currentTrackIndex + 1;
         if (nextIndex >= state.playlist.length) {
-          nextIndex = state.isRepeat ? 0 : state.currentTrackIndex;
+          // Если включен режим повтора всего плейлиста, переходим к началу
+          if (state.repeatMode === 'all') {
+            nextIndex = 0;
+          } else {
+            // Если плейлист закончился и повтор выключен, останавливаемся на последнем треке
+            nextIndex = state.currentTrackIndex;
+            state.isPlaying = false;
+          }
         }
       }
 
-      state.currentTrack = state.playlist[nextIndex];
-      state.currentTrackIndex = nextIndex;
-      state.currentTime = 0;
+      // Проверяем, что индекс валидный
+      if (nextIndex >= 0 && nextIndex < state.playlist.length) {
+        state.currentTrack = state.playlist[nextIndex];
+        state.currentTrackIndex = nextIndex;
+        state.currentTime = 0;
+      }
     },
     prevTrack: (state) => {
       if (state.playlist.length === 0) return;
@@ -174,13 +196,22 @@ export const playerSlice = createSlice({
         // Обычная последовательность
         prevIndex = state.currentTrackIndex - 1;
         if (prevIndex < 0) {
-          prevIndex = state.isRepeat ? state.playlist.length - 1 : 0;
+          // Если включен режим повтора всего плейлиста, переходим к концу
+          if (state.repeatMode === 'all') {
+            prevIndex = state.playlist.length - 1;
+          } else {
+            // Если плейлист закончился и повтор выключен, останавливаемся на первом треке
+            prevIndex = 0;
+          }
         }
       }
 
-      state.currentTrack = state.playlist[prevIndex];
-      state.currentTrackIndex = prevIndex;
-      state.currentTime = 0;
+      // Проверяем, что индекс валидный
+      if (prevIndex >= 0 && prevIndex < state.playlist.length) {
+        state.currentTrack = state.playlist[prevIndex];
+        state.currentTrackIndex = prevIndex;
+        state.currentTime = 0;
+      }
     },
     playTrack: (state, action: PayloadAction<Track>) => {
       const trackIndex = state.playlist.findIndex(

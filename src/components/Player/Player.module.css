@@ -212,6 +212,23 @@
   stroke: #696969;
 }
 
+.repeatIndicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #1ed760;
+  color: #000000;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+}
+
 .playerBtnShuffle {
   display: -webkit-box;
   display: -ms-flexbox;

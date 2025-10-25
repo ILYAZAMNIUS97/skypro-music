@@ -150,13 +150,23 @@ export const Player = () => {
     };
 
     const handleEnded = () => {
-      if (state.isRepeat) {
+      // Проверяем, что есть треки в плейлисте
+      if (state.playlist.length === 0) {
+        console.log('Плейлист пуст, воспроизведение остановлено');
+        return;
+      }
+
+      if (state.repeatMode === 'one') {
+        // Повторяем текущий трек
         audio.currentTime = 0;
         audio.play().catch((error) => {
           console.log('Ошибка при повторном воспроизведении:', error);
         });
+      } else if (state.repeatMode === 'all') {
+        // Переходим к следующему треку (логика повтора плейлиста в nextTrack)
+        dispatch(nextTrack());
       } else {
-        // Переходим к следующему треку
+        // Обычное поведение - переходим к следующему треку
         dispatch(nextTrack());
       }
     };
@@ -201,7 +211,7 @@ export const Player = () => {
       audio.removeEventListener('loadeddata', handleLoadedData);
       audio.removeEventListener('canplay', handleCanPlay);
     };
-  }, [state.isRepeat, dispatch]);
+  }, [state.repeatMode, state.playlist.length, dispatch]);
 
   // Обновляем src аудио элемента при смене трека и автоматически запускаем воспроизведение
   useEffect(() => {
@@ -350,10 +360,24 @@ export const Player = () => {
                   [styles.active]: state.isRepeat,
                 })}
                 onClick={handleRepeatClick}
+                title={
+                  state.repeatMode === 'off'
+                    ? 'Повтор выключен'
+                    : state.repeatMode === 'one'
+                      ? 'Повтор одного трека'
+                      : 'Повтор всего плейлиста'
+                }
               >
                 <svg className={styles.playerBtnRepeatSvg}>
                   <use href="/img/icon/sprite.svg#icon-repeat"></use>
                 </svg>
+                {/* Индикатор режима повтора */}
+                {state.repeatMode === 'one' && (
+                  <span className={styles.repeatIndicator}>1</span>
+                )}
+                {state.repeatMode === 'all' && (
+                  <span className={styles.repeatIndicator}>∞</span>
+                )}
               </button>
 
               <button
