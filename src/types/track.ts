@@ -9,6 +9,7 @@ export interface Track {
   authorId?: string;
   albumId?: string;
   src?: string; // URL аудиофайла
+  isFavorite?: boolean; // Флаг избранного трека
 }
 
 export interface TrackProps {

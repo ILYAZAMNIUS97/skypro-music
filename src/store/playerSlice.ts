@@ -1,5 +1,10 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import {
+  createSlice,
+  type PayloadAction,
+  createAsyncThunk,
+} from '@reduxjs/toolkit';
 import { type Track } from '../types/track';
+import { tracksApi, transformApiTrack } from '../utils/api';
 
 interface PlayerState {
   currentTrack: Track | null;
@@ -11,6 +16,8 @@ interface PlayerState {
   isShuffle: boolean;
   playlist: Track[];
   currentTrackIndex: number;
+  isLoading: boolean;
+  error: string | null;
 }
 
 const initialState: PlayerState = {
@@ -23,7 +30,69 @@ const initialState: PlayerState = {
   isShuffle: false,
   playlist: [],
   currentTrackIndex: -1,
+  isLoading: false,
+  error: null,
 };
+
+// Асинхронные thunk'и для работы с API
+export const fetchTracks = createAsyncThunk(
+  'player/fetchTracks',
+  async (_, { rejectWithValue }) => {
+    try {
+      const apiTracks = await tracksApi.getAllTracks();
+      const transformedTracks = apiTracks
+        .map(transformApiTrack)
+        .filter((track) => track !== null); // Фильтруем null значения
+      return transformedTracks;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Ошибка загрузки треков',
+      );
+    }
+  },
+);
+
+export const fetchFavoriteTracks = createAsyncThunk(
+  'player/fetchFavoriteTracks',
+  async (_, { rejectWithValue }) => {
+    try {
+      const apiTracks = await tracksApi.getFavoriteTracks();
+      const transformedTracks = apiTracks
+        .map(transformApiTrack)
+        .filter((track) => track !== null); // Фильтруем null значения
+      return transformedTracks;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error
+          ? error.message
+          : 'Ошибка загрузки избранных треков',
+      );
+    }
+  },
+);
+
+export const toggleFavorite = createAsyncThunk(
+  'player/toggleFavorite',
+  async (
+    { trackId, isFavorite }: { trackId: string; isFavorite: boolean },
+    { rejectWithValue },
+  ) => {
+    try {
+      const id = parseInt(trackId);
+      if (isFavorite) {
+        await tracksApi.removeFromFavorites(id);
+      } else {
+        await tracksApi.addToFavorites(id);
+      }
+      return { trackId, isFavorite: !isFavorite };
+    } catch (error) {
+      console.error('Ошибка при изменении избранного:', error);
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Ошибка изменения избранного',
+      );
+    }
+  },
+);
 
 export const playerSlice = createSlice({
   name: 'player',
@@ -154,6 +223,62 @@ export const playerSlice = createSlice({
     togglePlayPause: (state) => {
       state.isPlaying = !state.isPlaying;
     },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    // Обработка fetchTracks
+    builder
+      .addCase(fetchTracks.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchTracks.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.playlist = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchTracks.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Обработка fetchFavoriteTracks
+    builder
+      .addCase(fetchFavoriteTracks.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchFavoriteTracks.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.playlist = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchFavoriteTracks.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Обработка toggleFavorite
+    builder
+      .addCase(toggleFavorite.fulfilled, (state, action) => {
+        const { trackId, isFavorite } = action.payload;
+        // Обновляем статус избранного в плейлисте
+        const trackIndex = state.playlist.findIndex(
+          (track) => track.trackId === trackId,
+        );
+        if (trackIndex !== -1) {
+          state.playlist[trackIndex].isFavorite = isFavorite;
+        }
+        // Обновляем статус в текущем треке, если это он
+        if (state.currentTrack?.trackId === trackId) {
+          state.currentTrack.isFavorite = isFavorite;
+        }
+      })
+      .addCase(toggleFavorite.rejected, (state, action) => {
+        state.error = action.payload as string;
+      });
   },
 });
 
@@ -176,5 +301,6 @@ export const {
   setProgress,
   setVolumeLevel,
   togglePlayPause,
+  clearError,
 } = playerSlice.actions;
 export default playerSlice.reducer;

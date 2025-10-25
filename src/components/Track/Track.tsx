@@ -5,7 +5,7 @@ import cn from 'classnames';
 import styles from './Track.module.css';
 import { type TrackProps } from '../../types/track';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { playTrackWithPlaylist } from '@/store/playerSlice';
+import { playTrackWithPlaylist, toggleFavorite } from '@/store/playerSlice';
 
 export const Track = ({ track }: TrackProps) => {
   const {
@@ -18,6 +18,8 @@ export const Track = ({ track }: TrackProps) => {
     albumId = '1',
     time,
     genre,
+    src,
+    isFavorite = false,
   } = track;
 
   const dispatch = useAppDispatch();
@@ -29,8 +31,8 @@ export const Track = ({ track }: TrackProps) => {
 
   // Обработчик клика по треку для воспроизведения
   const handleTrackClick = () => {
-    // Проверяем, что это трек "Guilt" - единственный с реальным аудиофайлом
-    if (title === 'Guilt') {
+    // Проверяем, что у трека есть аудиофайл
+    if (src) {
       // Создаем объект трека для плеера
       const trackData = {
         title,
@@ -42,18 +44,28 @@ export const Track = ({ track }: TrackProps) => {
         trackId,
         authorId,
         albumId,
-        src: 'https://webdev-music-003b5b991590.herokuapp.com/media/music_files/Musiclfiles_-_Epic_Heroic_Conquest.mp3', // Оригинальный URL
+        src,
+        isFavorite,
       };
 
-      // Создаем плейлист только из этого трека
-      const playlist = [trackData];
-
-      // Запускаем воспроизведение с плейлистом
-      dispatch(playTrackWithPlaylist({ track: trackData, playlist }));
+      // Используем текущий плейлист из Redux
+      dispatch(
+        playTrackWithPlaylist({ track: trackData, playlist: state.playlist }),
+      );
     } else {
-      // Для всех остальных треков показываем alert
-      alert('Еще не реализовано');
+      alert('Аудиофайл недоступен');
     }
+  };
+
+  // Обработчик для лайка/дизлайка
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Предотвращаем клик по треку
+    dispatch(
+      toggleFavorite({
+        trackId,
+        isFavorite,
+      }),
+    );
   };
 
   return (
@@ -97,9 +109,17 @@ export const Track = ({ track }: TrackProps) => {
           </Link>
         </div>
         <div className={styles.trackTime}>
-          <svg className={styles.trackTimeSvg}>
-            <use href="/img/icon/sprite.svg#icon-like"></use>
-          </svg>
+          <button
+            className={cn(styles.trackTimeSvg, {
+              [styles.active]: isFavorite,
+            })}
+            onClick={handleLikeClick}
+            type="button"
+          >
+            <svg className={styles.trackTimeSvg}>
+              <use href="/img/icon/sprite.svg#icon-like"></use>
+            </svg>
+          </button>
           <span className={styles.trackTimeText}>{time}</span>
         </div>
       </div>

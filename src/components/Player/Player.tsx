@@ -14,12 +14,23 @@ import {
   pauseAudio,
   setProgress,
   setVolumeLevel,
+  fetchTracks,
+  toggleFavorite,
+  nextTrack,
+  prevTrack,
 } from '@/store/playerSlice';
 
 export const Player = () => {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.player);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Загружаем треки при монтировании компонента
+  useEffect(() => {
+    if (state.playlist.length === 0) {
+      dispatch(fetchTracks());
+    }
+  }, [dispatch, state.playlist.length]);
 
   // Функции для управления плеером
   const play = async () => {
@@ -71,11 +82,11 @@ export const Player = () => {
   };
 
   const handlePrevClick = () => {
-    alert('Еще не реализовано');
+    dispatch(prevTrack());
   };
 
   const handleNextClick = () => {
-    alert('Еще не реализовано');
+    dispatch(nextTrack());
   };
 
   const handleRepeatClick = () => {
@@ -83,7 +94,8 @@ export const Player = () => {
   };
 
   const handleShuffleClick = () => {
-    alert('Еще не реализовано');
+    // TODO: Реализовать перемешивание
+    alert('Перемешивание будет реализовано в следующих версиях');
   };
 
   // Обработчик для прогресс-бара
@@ -99,6 +111,29 @@ export const Player = () => {
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
     dispatch(setVolumeLevel(newVolume));
+  };
+
+  // Обработчики для лайка/дизлайка
+  const handleLikeClick = () => {
+    if (state.currentTrack?.trackId) {
+      dispatch(
+        toggleFavorite({
+          trackId: state.currentTrack.trackId,
+          isFavorite: state.currentTrack.isFavorite || false,
+        }),
+      );
+    }
+  };
+
+  const handleDislikeClick = () => {
+    if (state.currentTrack?.trackId) {
+      dispatch(
+        toggleFavorite({
+          trackId: state.currentTrack.trackId,
+          isFavorite: state.currentTrack.isFavorite || false,
+        }),
+      );
+    }
   };
 
   // Обработчики событий аудио элемента
@@ -121,8 +156,8 @@ export const Player = () => {
           console.log('Ошибка при повторном воспроизведении:', error);
         });
       } else {
-        // При завершении трека показываем alert, так как у нас только один трек
-        alert('Еще не реализовано');
+        // Переходим к следующему треку
+        dispatch(nextTrack());
       }
     };
 
@@ -229,6 +264,36 @@ export const Player = () => {
   //   if (state.duration === 0) return 0;
   //   return (state.currentTime / state.duration) * 100;
   // }, [state.currentTime, state.duration]);
+
+  // Показываем индикатор загрузки
+  if (state.isLoading) {
+    return (
+      <div className={styles.bar}>
+        <div className={styles.barContent}>
+          <div className={styles.loadingMessage}>Загрузка треков...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Показываем ошибку, если есть
+  if (state.error) {
+    return (
+      <div className={styles.bar}>
+        <div className={styles.barContent}>
+          <div className={styles.errorMessage}>
+            Ошибка: {state.error}
+            <button
+              onClick={() => dispatch(fetchTracks())}
+              className={styles.retryButton}
+            >
+              Повторить
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.bar}>
@@ -338,12 +403,22 @@ export const Player = () => {
               </div>
 
               <div className={styles.trackPlayDislike}>
-                <button className={cn(styles.playerBtnShuffle, styles.btnIcon)}>
+                <button
+                  className={cn(styles.playerBtnShuffle, styles.btnIcon, {
+                    [styles.active]: state.currentTrack?.isFavorite,
+                  })}
+                  onClick={handleLikeClick}
+                  disabled={!state.currentTrack}
+                >
                   <svg className={styles.trackPlayLikeSvg}>
                     <use href="/img/icon/sprite.svg#icon-like"></use>
                   </svg>
                 </button>
-                <button className={cn(styles.trackPlayDislike, styles.btnIcon)}>
+                <button
+                  className={cn(styles.trackPlayDislike, styles.btnIcon)}
+                  onClick={handleDislikeClick}
+                  disabled={!state.currentTrack}
+                >
                   <svg className={styles.trackPlayDislikeSvg}>
                     <use href="/img/icon/sprite.svg#icon-dislike"></use>
                   </svg>
