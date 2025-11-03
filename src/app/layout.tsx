@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import '@/app/globals.css';
 import { ReduxProvider } from '@/components/ReduxProvider/ReduxProvider';
+import ConsoleSilencer from '@/components/ConsoleSilencer';
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={montserrat.variable}>
+        <ConsoleSilencer />
         <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
