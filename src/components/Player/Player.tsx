@@ -525,12 +525,15 @@ export const Player = () => {
     }
   }, [state.currentTrack, state.repeatMode]);
 
-  // Форматирование времени (пока не используется, но может пригодиться)
-  // const formatTime = useCallback((seconds: number) => {
-  //   const mins = Math.floor(seconds / 60);
-  //   const secs = Math.floor(seconds % 60);
-  //   return `${mins}:${secs.toString().padStart(2, '0')}`;
-  // }, []);
+  // Форматирование времени
+  const formatTime = (seconds: number): string => {
+    if (!isFinite(seconds) || isNaN(seconds)) {
+      return '00:00';
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Вычисляем прогресс в процентах (пока не используется, но может пригодиться)
   // const progressPercent = useMemo(() => {
@@ -580,6 +583,14 @@ export const Player = () => {
             onChange={handleProgressChange}
             readOnly={false}
           />
+        </div>
+
+        {/* Время трека */}
+        <div className={styles.timeContainer}>
+          <span className={styles.currentTime}>{formatTime(currentTime)}</span>
+          <span className={styles.totalTime}>
+            {formatTime(state.duration || 0)}
+          </span>
         </div>
 
         <div className={styles.barPlayerBlock}>
