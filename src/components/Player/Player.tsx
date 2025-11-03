@@ -648,6 +648,7 @@ export const Player = () => {
                   [styles.active]: state.isShuffle,
                 })}
                 onClick={handleShuffleClick}
+                title="Перемешивание треков"
               >
                 <svg className={styles.playerBtnShuffleSvg}>
                   <use href="/img/icon/sprite.svg#icon-shuffle"></use>
