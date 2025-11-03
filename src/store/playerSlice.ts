@@ -20,6 +20,9 @@ interface PlayerState {
   isLoading: boolean;
   error: string | null;
   pausedTime: number; // Время паузы для сохранения позиции
+  // Запоминаем порядок воспроизведения при Shuffle
+  shuffleOrder: number[] | null;
+  shufflePosition: number; // текущая позиция в shuffleOrder
 }
 
 const initialState: PlayerState = {
@@ -36,6 +39,8 @@ const initialState: PlayerState = {
   isLoading: false,
   error: null,
   pausedTime: 0,
+  shuffleOrder: null,
+  shufflePosition: -1,
 };
 
 // Асинхронные thunk'и для работы с API
@@ -137,23 +142,46 @@ export const playerSlice = createSlice({
     },
     toggleShuffle: (state) => {
       state.isShuffle = !state.isShuffle;
+      if (state.isShuffle) {
+        // Включаем shuffle: создаем порядок, фиксируем позицию текущего трека
+        const indices = state.playlist.map((_, i) => i);
+        for (let i = indices.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+        const currentIndex = state.currentTrackIndex > -1 ? state.currentTrackIndex : 0;
+        const pos = indices.indexOf(currentIndex);
+        if (pos > -1) {
+          state.shuffleOrder = indices;
+          state.shufflePosition = pos;
+        } else {
+          state.shuffleOrder = [currentIndex, ...indices.filter((i) => i !== currentIndex)];
+          state.shufflePosition = 0;
+        }
+      } else {
+        // Выключаем shuffle
+        state.shuffleOrder = null;
+        state.shufflePosition = -1;
+      }
     },
     setPlaylist: (state, action: PayloadAction<Track[]>) => {
       state.playlist = action.payload;
+      // При смене плейлиста сбрасываем shuffle порядок
+      state.shuffleOrder = null;
+      state.shufflePosition = -1;
     },
     nextTrack: (state) => {
       if (state.playlist.length === 0) return;
 
-      let nextIndex;
-      if (state.isShuffle) {
-        // Случайный трек при включенном перемешивании
-        nextIndex = Math.floor(Math.random() * state.playlist.length);
-        // Если случайно выбрали тот же трек, берем следующий
-        if (
-          nextIndex === state.currentTrackIndex &&
-          state.playlist.length > 1
-        ) {
-          nextIndex = (state.currentTrackIndex + 1) % state.playlist.length;
+      let nextIndex = state.currentTrackIndex;
+      if (state.isShuffle && state.shuffleOrder && state.shuffleOrder.length > 0) {
+        // Память порядка при Shuffle
+        if (state.shufflePosition < state.shuffleOrder.length - 1) {
+          state.shufflePosition += 1;
+          nextIndex = state.shuffleOrder[state.shufflePosition];
+        } else {
+          // В конце — ничего не делаем
+          nextIndex = state.currentTrackIndex;
         }
       } else {
         // Обычная последовательность
@@ -163,15 +191,18 @@ export const playerSlice = createSlice({
           if (state.repeatMode === 'all') {
             nextIndex = 0;
           } else {
-            // Если плейлист закончился и повтор выключен, останавливаемся на последнем треке
+            // В конце — остаемся на текущем треке (не останавливаем воспроизведение насильно)
             nextIndex = state.currentTrackIndex;
-            state.isPlaying = false;
           }
         }
       }
 
-      // Проверяем, что индекс валидный
-      if (nextIndex >= 0 && nextIndex < state.playlist.length) {
+      // Проверяем, что индекс валидный и есть фактическое перемещение
+      if (
+        nextIndex >= 0 &&
+        nextIndex < state.playlist.length &&
+        nextIndex !== state.currentTrackIndex
+      ) {
         state.currentTrack = state.playlist[nextIndex];
         state.currentTrackIndex = nextIndex;
         state.currentTime = 0; // Всегда сбрасываем при смене трека
@@ -181,19 +212,14 @@ export const playerSlice = createSlice({
     prevTrack: (state) => {
       if (state.playlist.length === 0) return;
 
-      let prevIndex;
-      if (state.isShuffle) {
-        // Случайный трек при включенном перемешивании
-        prevIndex = Math.floor(Math.random() * state.playlist.length);
-        // Если случайно выбрали тот же трек, берем предыдущий
-        if (
-          prevIndex === state.currentTrackIndex &&
-          state.playlist.length > 1
-        ) {
-          prevIndex =
-            state.currentTrackIndex === 0
-              ? state.playlist.length - 1
-              : state.currentTrackIndex - 1;
+      let prevIndex = state.currentTrackIndex;
+      if (state.isShuffle && state.shuffleOrder && state.shuffleOrder.length > 0) {
+        if (state.shufflePosition > 0) {
+          state.shufflePosition -= 1;
+          prevIndex = state.shuffleOrder[state.shufflePosition];
+        } else {
+          // В начале — ничего не делаем
+          prevIndex = state.currentTrackIndex;
         }
       } else {
         // Обычная последовательность
@@ -203,14 +229,18 @@ export const playerSlice = createSlice({
           if (state.repeatMode === 'all') {
             prevIndex = state.playlist.length - 1;
           } else {
-            // Если плейлист закончился и повтор выключен, останавливаемся на первом треке
+            // В начале — остаемся на первом
             prevIndex = 0;
           }
         }
       }
 
-      // Проверяем, что индекс валидный
-      if (prevIndex >= 0 && prevIndex < state.playlist.length) {
+      // Проверяем, что индекс валидный и есть фактическое перемещение
+      if (
+        prevIndex >= 0 &&
+        prevIndex < state.playlist.length &&
+        prevIndex !== state.currentTrackIndex
+      ) {
         state.currentTrack = state.playlist[prevIndex];
         state.currentTrackIndex = prevIndex;
         state.currentTime = 0; // Всегда сбрасываем при смене трека
@@ -238,6 +268,27 @@ export const playerSlice = createSlice({
       state.currentTrackIndex = trackIndex;
       state.isPlaying = true;
       state.currentTime = 0; // Всегда сбрасываем при смене трека
+      // Если shuffle включен — пересобираем порядок с учетом текущего трека
+      if (state.isShuffle) {
+        const indices = playlist.map((_, i) => i);
+        // Перемешиваем Фишером-Йетсом
+        for (let i = indices.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+        // Гарантируем, что текущий трек будет на текущей позиции
+        const pos = indices.indexOf(trackIndex);
+        if (pos > -1) {
+          state.shuffleOrder = indices;
+          state.shufflePosition = pos;
+        } else {
+          state.shuffleOrder = [trackIndex, ...indices.filter((i) => i !== trackIndex)];
+          state.shufflePosition = 0;
+        }
+      } else {
+        state.shuffleOrder = null;
+        state.shufflePosition = -1;
+      }
     },
     togglePlay: (state) => {
       state.isPlaying = !state.isPlaying;
