@@ -1,20 +1,41 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Sidebar.module.css';
 import { SELECTIONS_CONFIG } from '@/utils/selectionConfig';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { logoutUser } from '@/store/authSlice';
+import { useRouter } from 'next/navigation';
 
 export const Sidebar = () => {
   const selections = Object.entries(SELECTIONS_CONFIG);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    router.push('/auth/signin');
+  };
 
   return (
     <div className={styles.sidebar}>
       <div className={styles.sidebarPersonal}>
-        <p className={styles.sidebarPersonalName}>Sergey.Ivanov</p>
-        <div className={styles.sidebarIcon}>
+        <p className={styles.sidebarPersonalName}>
+          {isAuthenticated ? user?.username : 'Гость'}
+        </p>
+        <button
+          type="button"
+          className={styles.sidebarIcon}
+          onClick={handleLogout}
+          aria-label="Выйти из аккаунта"
+          disabled={!isAuthenticated}
+        >
           <svg className={styles.sidebarIconSvg}>
             <use href="/img/icon/sprite.svg#logout"></use>
           </svg>
-        </div>
+        </button>
       </div>
       <div className={styles.sidebarBlock}>
         <div className={styles.sidebarList}>

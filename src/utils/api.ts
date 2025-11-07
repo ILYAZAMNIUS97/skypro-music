@@ -1,6 +1,6 @@
 // API сервис для работы с треками SkyPro Music
 
-const API_BASE_URL = 'https://webdev-music-003b5b991590.herokuapp.com';
+export const API_BASE_URL = 'https://webdev-music-003b5b991590.herokuapp.com';
 
 // Интерфейс для ответа API треков
 export interface ApiTrack {

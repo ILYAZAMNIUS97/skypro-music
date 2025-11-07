@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
-import { initializeTestTokens } from '@/utils/auth';
+import { useAppDispatch } from '@/store/hooks';
+import { initializeAuth } from '@/store/authSlice';
 
 export const TokenInitializer = () => {
-  useEffect(() => {
-    // Инициализируем токены для тестирования
-    initializeTestTokens();
-  }, []);
+  const dispatch = useAppDispatch();
 
-  return null; // Этот компонент не рендерит ничего
+  useEffect(() => {
+    dispatch(initializeAuth());
+  }, [dispatch]);
+
+  return null;
 };
