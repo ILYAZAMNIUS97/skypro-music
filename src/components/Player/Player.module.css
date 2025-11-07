@@ -4,6 +4,45 @@
   left: 0;
   width: 100%;
   background: rgba(28, 28, 28, 0.5);
+  border-top: none;
+}
+
+.loadingMessage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: #ffffff;
+  font-size: 16px;
+  background: rgba(28, 28, 28, 0.8);
+}
+
+.errorMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: #ff6b6b;
+  font-size: 16px;
+  background: rgba(28, 28, 28, 0.8);
+  gap: 10px;
+}
+
+.retryButton {
+  background: #1ed760;
+  color: #000000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.retryButton:hover {
+  background: #1db954;
 }
 
 .barContent {
@@ -14,13 +53,38 @@
   -webkit-box-direction: normal;
   -ms-flex-direction: column;
   flex-direction: column;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .barPlayerProgress {
   width: 100%;
   height: 5px;
-  background: #2e2e2e;
+  background: transparent;
   position: relative;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0 31px;
+  margin-bottom: 3px;
+}
+
+.currentTime,
+.totalTime {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: #d9d9d9;
 }
 
 .progressBar {
@@ -30,6 +94,9 @@
   background: transparent;
   outline: none;
   cursor: pointer;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .progressBar::-webkit-slider-runnable-track {
@@ -78,6 +145,7 @@
   -webkit-box-pack: justify;
   -ms-flex-pack: justify;
   justify-content: space-between;
+  margin-top: 0;
 }
 
 .barPlayer {
@@ -172,6 +240,23 @@
   height: 12px;
   fill: transparent;
   stroke: #696969;
+}
+
+.repeatIndicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #1ed760;
+  color: #000000;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
 }
 
 .playerBtnShuffle {

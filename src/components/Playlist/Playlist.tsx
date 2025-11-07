@@ -3,17 +3,45 @@
 import { useEffect } from 'react';
 import { Track } from '../Track/Track';
 import styles from './Playlist.module.css';
-import { tracks } from '../../data/tracks';
-import { useAppDispatch } from '@/store/hooks';
-import { setPlaylist } from '@/store/playerSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { fetchTracks } from '@/store/playerSlice';
 
 export const Playlist = () => {
   const dispatch = useAppDispatch();
+  const { playlist, isLoading, error } = useAppSelector(
+    (state) => state.player,
+  );
 
-  // Инициализируем плейлист при загрузке компонента
+  // Загружаем треки при монтировании компонента
   useEffect(() => {
-    dispatch(setPlaylist(tracks));
-  }, [dispatch]);
+    if (playlist.length === 0) {
+      dispatch(fetchTracks());
+    }
+  }, [dispatch, playlist.length]);
+
+  if (isLoading) {
+    return (
+      <div className={styles.content}>
+        <div className={styles.loadingMessage}>Загрузка треков...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.content}>
+        <div className={styles.errorMessage}>
+          Ошибка: {error}
+          <button
+            onClick={() => dispatch(fetchTracks())}
+            className={styles.retryButton}
+          >
+            Повторить
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.content}>
@@ -28,17 +56,15 @@ export const Playlist = () => {
         </div>
       </div>
       <div className={styles.contentPlaylist}>
-        {tracks.map((track, index) => (
-          <Track
-            key={index}
-            track={{
-              ...track,
-              trackId: index.toString(),
-              authorId: index.toString(),
-              albumId: index.toString(),
-            }}
-          />
-        ))}
+        {playlist.length > 0 ? (
+          playlist.map((track, index) => (
+            <Track key={track.trackId || index} track={track} />
+          ))
+        ) : (
+          <div className={styles.emptyMessage}>
+            Треки не найдены. Попробуйте обновить страницу.
+          </div>
+        )}
       </div>
     </div>
   );

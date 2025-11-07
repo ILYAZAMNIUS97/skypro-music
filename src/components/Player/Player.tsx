@@ -1,24 +1,37 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import cn from 'classnames';
 import Link from 'next/link';
 import styles from './Player.module.css';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { ProgressBar } from '@/components/ProgressBar';
 import {
-  setCurrentTime,
   toggleRepeat,
+  toggleShuffle,
   setDuration,
-  playAudio,
-  pauseAudio,
-  setProgress,
   setVolumeLevel,
+  fetchTracks,
+  toggleFavorite,
+  nextTrack,
+  prevTrack,
+  pauseAudio,
+  playAudio,
 } from '@/store/playerSlice';
 
 export const Player = () => {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.player);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [previousTrackId, setPreviousTrackId] = useState<string | null>(null);
+
+  // Загружаем треки при монтировании компонента
+  useEffect(() => {
+    if (state.playlist.length === 0) {
+      dispatch(fetchTracks());
+    }
+  }, [dispatch, state.playlist.length]);
 
   // Функции для управления плеером
   const play = async () => {
@@ -35,7 +48,7 @@ export const Player = () => {
           // HAVE_CURRENT_DATA
           console.log('Начинаем воспроизведение...');
           await audioRef.current.play();
-          dispatch(playAudio());
+          dispatch(playAudio()); // Используем простой action для воспроизведения
           console.log('Воспроизведение началось');
         } else {
           console.log(
@@ -53,7 +66,8 @@ export const Player = () => {
   const pause = () => {
     if (audioRef.current) {
       audioRef.current.pause();
-      dispatch(pauseAudio());
+      dispatch(pauseAudio()); // Используем простой action для паузы
+      console.log('🎵 Пауза');
     }
   };
 
@@ -70,19 +84,24 @@ export const Player = () => {
   };
 
   const handlePrevClick = () => {
-    alert('Еще не реализовано');
+    dispatch(prevTrack());
   };
 
   const handleNextClick = () => {
-    alert('Еще не реализовано');
+    dispatch(nextTrack());
   };
 
   const handleRepeatClick = () => {
+    console.log('Переключаем режим повтора. Текущий режим:', state.repeatMode);
     dispatch(toggleRepeat());
+    // Добавляем небольшую задержку для проверки обновления состояния
+    setTimeout(() => {
+      console.log('Новый режим повтора после переключения:', state.repeatMode);
+    }, 100);
   };
 
   const handleShuffleClick = () => {
-    alert('Еще не реализовано');
+    dispatch(toggleShuffle());
   };
 
   // Обработчик для прогресс-бара
@@ -90,8 +109,9 @@ export const Player = () => {
     const newTime = parseFloat(e.target.value);
     if (audioRef.current) {
       audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+      console.log('🎵 Перемещение прогресс-бара на:', newTime);
     }
-    dispatch(setProgress(newTime));
   };
 
   // Обработчик для громкости
@@ -100,50 +120,174 @@ export const Player = () => {
     dispatch(setVolumeLevel(newVolume));
   };
 
+  // Обработчики для лайка/дизлайка
+  const handleLikeClick = () => {
+    if (state.currentTrack?.trackId) {
+      dispatch(
+        toggleFavorite({
+          trackId: state.currentTrack.trackId,
+          isFavorite: state.currentTrack.isFavorite || false,
+        }),
+      );
+    }
+  };
+
+  const handleDislikeClick = () => {
+    if (state.currentTrack?.trackId) {
+      dispatch(
+        toggleFavorite({
+          trackId: state.currentTrack.trackId,
+          isFavorite: state.currentTrack.isFavorite || false,
+        }),
+      );
+    }
+  };
+
   // Обработчики событий аудио элемента
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const handleTimeUpdate = () => {
-      dispatch(setCurrentTime(audio.currentTime));
+      setCurrentTime(audio.currentTime);
+
+      // Логируем приближение к концу трека для отладки
+      if (state.duration > 0 && audio.currentTime > state.duration - 1) {
+        console.log('🎵 Приближаемся к концу трека:', {
+          currentTime: audio.currentTime,
+          duration: state.duration,
+          remaining: state.duration - audio.currentTime,
+        });
+      }
+
+      // Альтернативный механизм повтора через отслеживание времени
+      if (state.repeatMode === 'one' && state.duration > 0) {
+        // Проверяем, достигли ли мы конца трека (с небольшой погрешностью)
+        if (audio.currentTime >= state.duration - 0.1) {
+          console.log('🎵 Достигли конца трека, перезапускаем...');
+          audio.currentTime = 0;
+          setCurrentTime(0); // Сбрасываем только при повторе трека
+          dispatch(playAudio());
+
+          // Небольшая задержка для корректной работы
+          setTimeout(() => {
+            if (audio) {
+              audio.play().catch((error) => {
+                console.log('Ошибка при повторном воспроизведении:', error);
+              });
+            }
+          }, 100);
+        }
+      } else if (state.repeatMode === 'all' && state.duration > 0) {
+        // Проверяем, достигли ли мы конца трека для режима повтора всего плейлиста
+        if (audio.currentTime >= state.duration - 0.1) {
+          console.log('🎵 Достигли конца трека, переходим к следующему...');
+          dispatch(nextTrack());
+        }
+      }
     };
 
     const handleDurationChange = () => {
+      console.log('🎵 Длительность трека установлена:', audio.duration);
       dispatch(setDuration(audio.duration || 0));
     };
 
     const handleEnded = () => {
-      if (state.isRepeat) {
+      console.log(
+        '🎵 Событие ended сработало! Режим повтора:',
+        state.repeatMode,
+      );
+      console.log('🎵 Текущий трек:', state.currentTrack?.title);
+      console.log('🎵 Длительность трека:', state.duration);
+
+      // Проверяем, что есть треки в плейлисте
+      if (state.playlist.length === 0) {
+        console.log('Плейлист пуст, воспроизведение остановлено');
+        return;
+      }
+
+      if (state.repeatMode === 'one') {
+        // Повторяем текущий трек
+        console.log('Повторяем текущий трек:', state.currentTrack?.title);
         audio.currentTime = 0;
-        audio.play().catch((error) => {
-          console.log('Ошибка при повторном воспроизведении:', error);
-        });
+        setCurrentTime(0); // Сбрасываем только при повторе трека
+        dispatch(playAudio()); // Обновляем состояние воспроизведения
+
+        // Небольшая задержка для корректной работы
+        setTimeout(() => {
+          if (audio) {
+            console.log(
+              'Пытаемся запустить воспроизведение, readyState:',
+              audio.readyState,
+            );
+
+            // Проверяем готовность аудио элемента
+            if (audio.readyState >= 2) {
+              // HAVE_CURRENT_DATA
+              audio
+                .play()
+                .then(() => {
+                  console.log('Воспроизведение успешно запущено');
+                })
+                .catch((error) => {
+                  console.log('Ошибка при повторном воспроизведении:', error);
+                });
+            } else {
+              console.log('Аудио элемент не готов к воспроизведению, ждем...');
+              // Ждем готовности аудио элемента
+              const checkReady = () => {
+                if (audio.readyState >= 2) {
+                  audio
+                    .play()
+                    .then(() => {
+                      console.log(
+                        'Воспроизведение успешно запущено после ожидания',
+                      );
+                    })
+                    .catch((error) => {
+                      console.log(
+                        'Ошибка при повторном воспроизведении:',
+                        error,
+                      );
+                    });
+                } else {
+                  setTimeout(checkReady, 50);
+                }
+              };
+              checkReady();
+            }
+          }
+        }, 100);
+      } else if (state.repeatMode === 'all') {
+        // Переходим к следующему треку (логика повтора плейлиста в nextTrack)
+        dispatch(nextTrack());
       } else {
-        // При завершении трека показываем alert, так как у нас только один трек
-        alert('Еще не реализовано');
+        // Обычное поведение - переходим к следующему треку
+        dispatch(nextTrack());
       }
     };
 
     const handlePlay = () => {
+      console.log('🎵 Аудио элемент начал воспроизведение');
       dispatch(playAudio());
     };
 
     const handlePause = () => {
+      console.log('🎵 Аудио элемент приостановлен');
       dispatch(pauseAudio());
     };
 
     const handleError = (error: Event) => {
-      console.log('Ошибка аудио элемента:', error);
+      console.log('🎵 Ошибка аудио элемента:', error);
       dispatch(pauseAudio());
     };
 
     const handleLoadedData = () => {
-      console.log('Аудио данные загружены, готов к воспроизведению');
+      console.log('🎵 Аудио данные загружены, готов к воспроизведению');
     };
 
     const handleCanPlay = () => {
-      console.log('Аудио готово к воспроизведению');
+      console.log('🎵 Аудио готово к воспроизведению');
     };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
@@ -165,49 +309,67 @@ export const Player = () => {
       audio.removeEventListener('loadeddata', handleLoadedData);
       audio.removeEventListener('canplay', handleCanPlay);
     };
-  }, [state.isRepeat, dispatch]);
+  }, [
+    state.repeatMode,
+    state.playlist.length,
+    state.currentTrack?.title,
+    state.duration,
+    dispatch,
+  ]);
 
-  // Обновляем src аудио элемента при смене трека и автоматически запускаем воспроизведение
+  // Обновляем src аудио элемента при смене трека
   useEffect(() => {
     if (audioRef.current && state.currentTrack) {
       if (state.currentTrack.src) {
+        const isNewTrack = previousTrackId !== state.currentTrack.trackId;
+
         console.log(
           'Загружаем трек:',
           state.currentTrack.title,
           'URL:',
           state.currentTrack.src,
+          'Новый трек:',
+          isNewTrack,
         );
+
         audioRef.current.src = state.currentTrack.src;
-        // Сбрасываем время воспроизведения при смене трека
-        audioRef.current.currentTime = 0;
 
-        // Автоматически запускаем воспроизведение, если трек должен играть
-        if (state.isPlaying) {
-          // Небольшая задержка для загрузки аудио
-          const timer = setTimeout(async () => {
-            if (audioRef.current) {
-              try {
-                if (audioRef.current.readyState >= 2) {
-                  await audioRef.current.play();
-                  dispatch(playAudio());
-                }
-              } catch (error) {
-                console.log('Ошибка воспроизведения:', error);
-              }
-            }
-          }, 200);
-
-          return () => clearTimeout(timer);
+        // Сбрасываем позицию только при смене на новый трек
+        if (isNewTrack) {
+          audioRef.current.currentTime = 0;
+          setCurrentTime(0);
         }
-      } else {
-        console.log(
-          'Трек выбран:',
-          state.currentTrack.title,
-          'но URL аудиофайла не указан',
-        );
+
+        // Обновляем предыдущий трек
+        setPreviousTrackId(state.currentTrack.trackId || null);
+
+        // Автоматически запускаем воспроизведение при смене трека
+        // Небольшая задержка для загрузки аудио
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch((error) => {
+              console.log('Ошибка автоматического воспроизведения:', error);
+            });
+          }
+        }, 100);
       }
     }
-  }, [state.currentTrack, state.isPlaying, dispatch]);
+  }, [state.currentTrack, previousTrackId]);
+
+  // Управляем воспроизведением/паузой
+  useEffect(() => {
+    if (audioRef.current) {
+      if (state.isPlaying) {
+        console.log('🎵 Запускаем воспроизведение через useEffect');
+        audioRef.current.play().catch((error) => {
+          console.log('Ошибка воспроизведения:', error);
+        });
+      } else {
+        console.log('🎵 Останавливаем воспроизведение через useEffect');
+        audioRef.current.pause();
+      }
+    }
+  }, [state.isPlaying]);
 
   // Обновляем громкость
   useEffect(() => {
@@ -216,12 +378,162 @@ export const Player = () => {
     }
   }, [state.volume]);
 
-  // Форматирование времени (пока не используется, но может пригодиться)
-  // const formatTime = useCallback((seconds: number) => {
-  //   const mins = Math.floor(seconds / 60);
-  //   const secs = Math.floor(seconds % 60);
-  //   return `${mins}:${secs.toString().padStart(2, '0')}`;
-  // }, []);
+  // Отслеживаем изменения состояния плеера для отладки
+  useEffect(() => {
+    console.log('🎵 Состояние плеера изменилось:', {
+      isPlaying: state.isPlaying,
+      repeatMode: state.repeatMode,
+      currentTrack: state.currentTrack?.title,
+      currentTime: state.currentTime,
+      duration: state.duration,
+    });
+
+    // Принудительная проверка для режима повтора одного трека
+    if (
+      state.repeatMode === 'one' &&
+      state.duration > 0 &&
+      state.currentTime >= state.duration - 0.1
+    ) {
+      console.log(
+        '🎵 Принудительная проверка: достигли конца трека, перезапускаем...',
+      );
+      const audio = audioRef.current;
+      if (audio) {
+        audio.currentTime = 0;
+        setCurrentTime(0); // Сбрасываем только при повторе трека
+        dispatch(playAudio());
+
+        // Небольшая задержка для корректной работы
+        setTimeout(() => {
+          if (audio) {
+            audio.play().catch((error) => {
+              console.log('Ошибка при повторном воспроизведении:', error);
+            });
+          }
+        }, 100);
+      }
+    }
+
+    // Принудительная проверка для режима повтора всего плейлиста
+    if (
+      state.repeatMode === 'all' &&
+      state.duration > 0 &&
+      state.currentTime >= state.duration - 0.1
+    ) {
+      console.log(
+        '🎵 Принудительная проверка: достигли конца трека для режима повтора всего плейлиста',
+      );
+      dispatch(nextTrack());
+    }
+  }, [
+    state.isPlaying,
+    state.repeatMode,
+    state.currentTrack?.title,
+    state.currentTime,
+    state.duration,
+    dispatch,
+  ]);
+
+  // Отслеживаем готовность аудио элемента
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      const handleCanPlay = () => {
+        console.log(
+          '🎵 Аудио элемент готов к воспроизведению, readyState:',
+          audio.readyState,
+        );
+      };
+
+      const handleLoadedData = () => {
+        console.log('🎵 Аудио данные загружены, readyState:', audio.readyState);
+      };
+
+      const handleEnded = () => {
+        console.log('🎵 Событие ended сработало в дополнительном обработчике!');
+      };
+
+      const handleTimeUpdate = () => {
+        // Логируем приближение к концу трека
+        if (audio.duration > 0 && audio.currentTime > audio.duration - 0.5) {
+          console.log('🎵 Очень близко к концу трека:', {
+            currentTime: audio.currentTime,
+            duration: audio.duration,
+            remaining: audio.duration - audio.currentTime,
+          });
+        }
+
+        // Дополнительная проверка для режима повтора одного трека
+        if (
+          state.repeatMode === 'one' &&
+          audio.duration > 0 &&
+          audio.currentTime >= audio.duration - 0.1
+        ) {
+          console.log(
+            '🎵 Дополнительная проверка в timeupdate: достигли конца трека',
+          );
+        }
+
+        // Дополнительная проверка для режима повтора всего плейлиста
+        if (
+          state.repeatMode === 'all' &&
+          audio.duration > 0 &&
+          audio.currentTime >= audio.duration - 0.1
+        ) {
+          console.log(
+            '🎵 Дополнительная проверка в timeupdate: достигли конца трека для режима повтора всего плейлиста',
+          );
+        }
+      };
+
+      const handlePause = () => {
+        console.log(
+          '🎵 Аудио элемент приостановлен в дополнительном обработчике',
+        );
+      };
+
+      const handlePlay = () => {
+        console.log(
+          '🎵 Аудио элемент начал воспроизведение в дополнительном обработчике',
+        );
+      };
+
+      const handleError = (error: Event) => {
+        console.log(
+          '🎵 Ошибка аудио элемента в дополнительном обработчике:',
+          error,
+        );
+      };
+
+      audio.addEventListener('canplay', handleCanPlay);
+      audio.addEventListener('loadeddata', handleLoadedData);
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('pause', handlePause);
+      audio.addEventListener('play', handlePlay);
+      audio.addEventListener('error', handleError);
+
+      return () => {
+        audio.removeEventListener('canplay', handleCanPlay);
+        audio.removeEventListener('loadeddata', handleLoadedData);
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('pause', handlePause);
+        audio.removeEventListener('play', handlePlay);
+        audio.removeEventListener('error', handleError);
+      };
+    }
+  }, [state.currentTrack, state.repeatMode]);
+
+  // Форматирование времени
+  const formatTime = (seconds: number): string => {
+    if (!isFinite(seconds) || isNaN(seconds)) {
+      return '00:00';
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Вычисляем прогресс в процентах (пока не используется, но может пригодиться)
   // const progressPercent = useMemo(() => {
@@ -229,19 +541,56 @@ export const Player = () => {
   //   return (state.currentTime / state.duration) * 100;
   // }, [state.currentTime, state.duration]);
 
+  // Показываем индикатор загрузки
+  if (state.isLoading) {
+    return (
+      <div className={styles.bar}>
+        <div className={styles.barContent}>
+          <div className={styles.loadingMessage}>Загрузка треков...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Показываем ошибку, если есть
+  if (state.error) {
+    return (
+      <div className={styles.bar}>
+        <div className={styles.barContent}>
+          <div className={styles.errorMessage}>
+            Ошибка: {state.error}
+            <button
+              onClick={() => dispatch(fetchTracks())}
+              className={styles.retryButton}
+            >
+              Повторить
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.bar}>
       <div className={styles.barContent}>
         {/* Прогресс-бар */}
         <div className={styles.barPlayerProgress}>
-          <input
-            type="range"
-            min="0"
+          <ProgressBar
             max={state.duration || 0}
-            value={state.currentTime}
+            value={currentTime}
+            step={1}
             onChange={handleProgressChange}
-            className={styles.progressBar}
+            readOnly={false}
           />
+        </div>
+
+        {/* Время трека */}
+        <div className={styles.timeContainer}>
+          <span className={styles.currentTime}>{formatTime(currentTime)}</span>
+          <span className={styles.totalTime}>
+            {formatTime(state.duration || 0)}
+          </span>
         </div>
 
         <div className={styles.barPlayerBlock}>
@@ -285,10 +634,24 @@ export const Player = () => {
                   [styles.active]: state.isRepeat,
                 })}
                 onClick={handleRepeatClick}
+                title={
+                  state.repeatMode === 'off'
+                    ? 'Повтор выключен'
+                    : state.repeatMode === 'one'
+                      ? 'Повтор одного трека'
+                      : 'Повтор всего плейлиста'
+                }
               >
                 <svg className={styles.playerBtnRepeatSvg}>
                   <use href="/img/icon/sprite.svg#icon-repeat"></use>
                 </svg>
+                {/* Индикатор режима повтора */}
+                {state.repeatMode === 'one' && (
+                  <span className={styles.repeatIndicator}>1</span>
+                )}
+                {state.repeatMode === 'all' && (
+                  <span className={styles.repeatIndicator}>∞</span>
+                )}
               </button>
 
               <button
@@ -296,6 +659,7 @@ export const Player = () => {
                   [styles.active]: state.isShuffle,
                 })}
                 onClick={handleShuffleClick}
+                title="Перемешивание треков"
               >
                 <svg className={styles.playerBtnShuffleSvg}>
                   <use href="/img/icon/sprite.svg#icon-shuffle"></use>
@@ -338,12 +702,22 @@ export const Player = () => {
               </div>
 
               <div className={styles.trackPlayDislike}>
-                <button className={cn(styles.playerBtnShuffle, styles.btnIcon)}>
+                <button
+                  className={cn(styles.playerBtnShuffle, styles.btnIcon, {
+                    [styles.active]: state.currentTrack?.isFavorite,
+                  })}
+                  onClick={handleLikeClick}
+                  disabled={!state.currentTrack}
+                >
                   <svg className={styles.trackPlayLikeSvg}>
                     <use href="/img/icon/sprite.svg#icon-like"></use>
                   </svg>
                 </button>
-                <button className={cn(styles.trackPlayDislike, styles.btnIcon)}>
+                <button
+                  className={cn(styles.trackPlayDislike, styles.btnIcon)}
+                  onClick={handleDislikeClick}
+                  disabled={!state.currentTrack}
+                >
                   <svg className={styles.trackPlayDislikeSvg}>
                     <use href="/img/icon/sprite.svg#icon-dislike"></use>
                   </svg>

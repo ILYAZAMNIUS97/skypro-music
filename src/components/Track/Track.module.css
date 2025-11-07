@@ -157,6 +157,19 @@
   margin-right: 17px;
   fill: transparent;
   stroke: #696969;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: stroke 0.2s ease;
+}
+
+.trackTimeSvg:hover {
+  stroke: #ffffff;
+}
+
+.trackTimeSvg.active {
+  fill: #1ed760;
+  stroke: #1ed760;
 }
 
 .trackTimeText {
