@@ -1,53 +1,61 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Sidebar.module.css';
+import { SELECTIONS_CONFIG } from '@/utils/selectionConfig';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { logoutUser } from '@/store/authSlice';
+import { useRouter } from 'next/navigation';
 
 export const Sidebar = () => {
+  const selections = Object.entries(SELECTIONS_CONFIG);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    router.push('/auth/signin');
+  };
+
   return (
     <div className={styles.sidebar}>
       <div className={styles.sidebarPersonal}>
-        <p className={styles.sidebarPersonalName}>Sergey.Ivanov</p>
-        <div className={styles.sidebarIcon}>
+        <p className={styles.sidebarPersonalName}>
+          {isAuthenticated ? user?.username : 'Гость'}
+        </p>
+        <button
+          type="button"
+          className={styles.sidebarIcon}
+          onClick={handleLogout}
+          aria-label="Выйти из аккаунта"
+          disabled={!isAuthenticated}
+        >
           <svg className={styles.sidebarIconSvg}>
             <use href="/img/icon/sprite.svg#logout"></use>
           </svg>
-        </div>
+        </button>
       </div>
       <div className={styles.sidebarBlock}>
         <div className={styles.sidebarList}>
-          <div className={styles.sidebarItem}>
-            <Link className={styles.sidebarLink} href="/playlist/daily">
-              <Image
-                className={styles.sidebarImg}
-                src="/img/playlist01.png"
-                alt="day's playlist"
-                fill
-                sizes="250px"
-              />
+          {selections.map(([slug, config]) => (
+            <Link
+              className={styles.sidebarItem}
+              href={`/playlist/${slug}`}
+              key={slug}
+            >
+              <div className={styles.sidebarLink}>
+                <Image
+                  className={styles.sidebarImg}
+                  src={config.imageSrc}
+                  alt={config.imageAlt}
+                  fill
+                  sizes="250px"
+                />
+              </div>
             </Link>
-          </div>
-          <div className={styles.sidebarItem}>
-            <Link className={styles.sidebarLink} href="/playlist/chill">
-              <Image
-                className={styles.sidebarImg}
-                src="/img/playlist02.png"
-                alt="day's playlist"
-                fill
-                sizes="250px"
-              />
-            </Link>
-          </div>
-          <div className={styles.sidebarItem}>
-            <Link className={styles.sidebarLink} href="/playlist/indie">
-              <Image
-                className={styles.sidebarImg}
-                src="/img/playlist03.png"
-                alt="day's playlist"
-                fill
-                sizes="250px"
-              />
-            </Link>
-          </div>
+          ))}
         </div>
       </div>
     </div>

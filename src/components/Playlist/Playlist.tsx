@@ -1,25 +1,87 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Track } from '../Track/Track';
 import styles from './Playlist.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { fetchTracks } from '@/store/playerSlice';
+import { clearError, fetchTracks, setPlaylist } from '@/store/playerSlice';
+import { type Track as TrackType } from '@/types/track';
 
-export const Playlist = () => {
+interface PlaylistProps {
+  initialTracks?: TrackType[];
+  errorMessage?: string | null;
+}
+
+/**
+ * Сравнивает два массива треков по содержимому
+ * Использует trackId для сравнения, если доступен, иначе сравнивает по ключевым полям
+ */
+function areTracksEqual(
+  tracks1: TrackType[] | undefined,
+  tracks2: TrackType[] | undefined,
+): boolean {
+  if (tracks1 === tracks2) return true;
+  if (!tracks1 || !tracks2) return false;
+  if (tracks1.length !== tracks2.length) return false;
+
+  for (let i = 0; i < tracks1.length; i++) {
+    const track1 = tracks1[i];
+    const track2 = tracks2[i];
+
+    // Сравнение по trackId, если доступен
+    if (track1.trackId && track2.trackId) {
+      if (track1.trackId !== track2.trackId) return false;
+      continue;
+    }
+
+    // Сравнение по ключевым полям, если trackId отсутствует
+    if (
+      track1.title !== track2.title ||
+      track1.author !== track2.author ||
+      track1.album !== track2.album ||
+      track1.time !== track2.time
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export const Playlist = ({ initialTracks, errorMessage }: PlaylistProps) => {
   const dispatch = useAppDispatch();
   const { playlist, isLoading, error } = useAppSelector(
     (state) => state.player,
   );
+  const previousInitialTracks = useRef<TrackType[] | undefined>(undefined);
+  const hasInitialTracksProp = initialTracks !== undefined;
 
-  // Загружаем треки при монтировании компонента
   useEffect(() => {
-    if (playlist.length === 0) {
+    if (!hasInitialTracksProp) {
+      previousInitialTracks.current = undefined;
+      return;
+    }
+
+    if (!areTracksEqual(previousInitialTracks.current, initialTracks)) {
+      dispatch(clearError());
+      dispatch(setPlaylist(initialTracks ?? []));
+      previousInitialTracks.current = initialTracks;
+    }
+  }, [dispatch, hasInitialTracksProp, initialTracks]);
+
+  useEffect(() => {
+    if (!hasInitialTracksProp && playlist.length === 0) {
       dispatch(fetchTracks());
     }
-  }, [dispatch, playlist.length]);
+  }, [dispatch, hasInitialTracksProp, playlist.length]);
 
-  if (isLoading) {
+  const displayLoading = !hasInitialTracksProp && isLoading;
+  const displayError = errorMessage ?? (hasInitialTracksProp ? null : error);
+  const tracksToRender = hasInitialTracksProp
+    ? (initialTracks ?? [])
+    : playlist;
+
+  if (displayLoading) {
     return (
       <div className={styles.content}>
         <div className={styles.loadingMessage}>Загрузка треков...</div>
@@ -27,17 +89,19 @@ export const Playlist = () => {
     );
   }
 
-  if (error) {
+  if (displayError) {
     return (
       <div className={styles.content}>
         <div className={styles.errorMessage}>
-          Ошибка: {error}
-          <button
-            onClick={() => dispatch(fetchTracks())}
-            className={styles.retryButton}
-          >
-            Повторить
-          </button>
+          {displayError}
+          {!hasInitialTracksProp && (
+            <button
+              onClick={() => dispatch(fetchTracks())}
+              className={styles.retryButton}
+            >
+              Повторить
+            </button>
+          )}
         </div>
       </div>
     );
@@ -56,8 +120,8 @@ export const Playlist = () => {
         </div>
       </div>
       <div className={styles.contentPlaylist}>
-        {playlist.length > 0 ? (
-          playlist.map((track, index) => (
+        {tracksToRender.length > 0 ? (
+          tracksToRender.map((track, index) => (
             <Track key={track.trackId || index} track={track} />
           ))
         ) : (

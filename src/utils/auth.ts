@@ -1,38 +1,64 @@
 // Утилиты для работы с аутентификацией
 
+import { type User } from '@/types/user';
+
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
+const USER_DATA_KEY = 'authUser';
+
+const isBrowser = () => typeof window !== 'undefined';
+
 // Функция для сохранения токенов в localStorage
 export const saveTokens = (access: string, refresh: string): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem('accessToken', access);
-  localStorage.setItem('refreshToken', refresh);
+  if (!isBrowser()) return;
+  localStorage.setItem(ACCESS_TOKEN_KEY, access);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
 };
 
 // Функция для получения access токена из localStorage
 export const getAccessToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken');
+  if (!isBrowser()) return null;
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
 };
 
 // Функция для получения refresh токена из localStorage
 export const getRefreshToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('refreshToken');
+  if (!isBrowser()) return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
 };
 
 // Функция для очистки токенов
 export const clearTokens = (): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+  if (!isBrowser()) return;
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
 };
 
-// Функция для инициализации токенов (для тестирования)
-export const initializeTestTokens = (): void => {
-  const accessToken =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNiIsInVzZXJuYW1lIjoiVXNlcjE3NjEzODc1NzQ4MDciLCJlbWFpbCI6Im11c2ljMTc2MTM4NzU3NDgwN0B0ZXN0LmNvbSIsImlhdCI6MTc2MTM4NzY1OCwiZXhwIjoxNzYxMzg5NDU4fQ.1a24slvSFYHUKAavGSTQ3_OerxLrlz85oVoQbL84N-U';
-  const refreshToken =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNiIsInVzZXJuYW1lIjoiVXNlcjE3NjEzODc1NzQ4MDciLCJlbWFpbCI6Im11c2ljMTc2MTM4NzU3NDgwN0B0ZXN0LmNvbSIsImlhdCI6MTc2MTM4NzY1OH0.BAgpUq84y8-gTbc6_O8EPYMNfuYu4-DEM4zQLxgfQdY';
+export const saveUserToStorage = (user: User): void => {
+  if (!isBrowser()) return;
+  localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+};
 
-  saveTokens(accessToken, refreshToken);
-  console.log('Токены инициализированы для тестирования');
+export const getUserFromStorage = (): User | null => {
+  if (!isBrowser()) return null;
+  try {
+    const raw = localStorage.getItem(USER_DATA_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as User;
+    if (!parsed || typeof parsed.id !== 'number') {
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    console.error(
+      'Ошибка парсинга данных пользователя из localStorage:',
+      error,
+    );
+    return null;
+  }
+};
+
+export const clearUserFromStorage = (): void => {
+  if (!isBrowser()) return;
+  localStorage.removeItem(USER_DATA_KEY);
 };
