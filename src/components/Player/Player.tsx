@@ -12,12 +12,12 @@ import {
   setDuration,
   setVolumeLevel,
   fetchTracks,
-  toggleFavorite,
   nextTrack,
   prevTrack,
   pauseAudio,
   playAudio,
 } from '@/store/playerSlice';
+import { useLikeTrack } from '@/hooks/useLikeTrack';
 
 export const Player = () => {
   const dispatch = useAppDispatch();
@@ -120,27 +120,14 @@ export const Player = () => {
     dispatch(setVolumeLevel(newVolume));
   };
 
+  // Хук для работы с лайками
+  const { toggleLike, isLike, isLoading, errorMsg } = useLikeTrack(
+    state.currentTrack,
+  );
+
   // Обработчики для лайка/дизлайка
   const handleLikeClick = () => {
-    if (state.currentTrack?.trackId) {
-      dispatch(
-        toggleFavorite({
-          trackId: state.currentTrack.trackId,
-          isFavorite: state.currentTrack.isFavorite || false,
-        }),
-      );
-    }
-  };
-
-  const handleDislikeClick = () => {
-    if (state.currentTrack?.trackId) {
-      dispatch(
-        toggleFavorite({
-          trackId: state.currentTrack.trackId,
-          isFavorite: state.currentTrack.isFavorite || false,
-        }),
-      );
-    }
+    toggleLike();
   };
 
   // Обработчики событий аудио элемента
@@ -703,23 +690,25 @@ export const Player = () => {
 
               <div className={styles.trackPlayDislike}>
                 <button
-                  className={cn(styles.playerBtnShuffle, styles.btnIcon, {
-                    [styles.active]: state.currentTrack?.isFavorite,
-                  })}
+                  className={cn(
+                    styles.playerBtnShuffle,
+                    styles.btnIcon,
+                    styles.likeButton,
+                    {
+                      [styles.loading]: isLoading,
+                    },
+                  )}
                   onClick={handleLikeClick}
-                  disabled={!state.currentTrack}
+                  disabled={!state.currentTrack || isLoading}
+                  title={
+                    errorMsg ||
+                    (isLike ? 'Убрать из избранного' : 'Добавить в избранное')
+                  }
                 >
                   <svg className={styles.trackPlayLikeSvg}>
-                    <use href="/img/icon/sprite.svg#icon-like"></use>
-                  </svg>
-                </button>
-                <button
-                  className={cn(styles.trackPlayDislike, styles.btnIcon)}
-                  onClick={handleDislikeClick}
-                  disabled={!state.currentTrack}
-                >
-                  <svg className={styles.trackPlayDislikeSvg}>
-                    <use href="/img/icon/sprite.svg#icon-dislike"></use>
+                    <use
+                      href={`/img/icon/sprite.svg#icon-${isLike ? 'like' : 'dislike'}`}
+                    ></use>
                   </svg>
                 </button>
               </div>

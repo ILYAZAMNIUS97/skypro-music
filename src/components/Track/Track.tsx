@@ -5,7 +5,8 @@ import cn from 'classnames';
 import styles from './Track.module.css';
 import { type TrackProps } from '../../types/track';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { playTrackWithPlaylist, toggleFavorite } from '@/store/playerSlice';
+import { playTrackWithPlaylist } from '@/store/playerSlice';
+import { useLikeTrack } from '@/hooks/useLikeTrack';
 
 export const Track = ({ track }: TrackProps) => {
   const {
@@ -24,6 +25,7 @@ export const Track = ({ track }: TrackProps) => {
 
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.player);
+  const { toggleLike, isLike, isLoading, errorMsg } = useLikeTrack(track);
 
   // Проверяем, является ли этот трек текущим
   const isCurrentTrack = state.currentTrack?.trackId === trackId;
@@ -60,12 +62,7 @@ export const Track = ({ track }: TrackProps) => {
   // Обработчик для лайка/дизлайка
   const handleLikeClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Предотвращаем клик по треку
-    dispatch(
-      toggleFavorite({
-        trackId,
-        isFavorite,
-      }),
-    );
+    toggleLike();
   };
 
   return (
@@ -110,14 +107,21 @@ export const Track = ({ track }: TrackProps) => {
         </div>
         <div className={styles.trackTime}>
           <button
-            className={cn(styles.trackTimeSvg, {
-              [styles.active]: isFavorite,
+            className={cn(styles.trackTimeSvg, styles.likeButton, {
+              [styles.loading]: isLoading,
             })}
             onClick={handleLikeClick}
             type="button"
+            disabled={isLoading}
+            title={
+              errorMsg ||
+              (isLike ? 'Убрать из избранного' : 'Добавить в избранное')
+            }
           >
             <svg className={styles.trackTimeSvg}>
-              <use href="/img/icon/sprite.svg#icon-like"></use>
+              <use
+                href={`/img/icon/sprite.svg#icon-${isLike ? 'like' : 'dislike'}`}
+              ></use>
             </svg>
           </button>
           <span className={styles.trackTimeText}>{time}</span>

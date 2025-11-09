@@ -29,6 +29,8 @@ interface AuthState {
   error: string | null;
   registrationMessage: string | null;
   fieldErrors: FieldErrors | null;
+  access: string | null;
+  refresh: string | null;
 }
 
 const initialState: AuthState = {
@@ -38,6 +40,8 @@ const initialState: AuthState = {
   error: null,
   registrationMessage: null,
   fieldErrors: null,
+  access: null,
+  refresh: null,
 };
 
 interface AuthErrorPayload {
@@ -144,6 +148,14 @@ const authSlice = createSlice({
     clearRegistrationMessage: (state) => {
       state.registrationMessage = null;
     },
+    updateTokens: (
+      state,
+      action: PayloadAction<{ access: string; refresh: string }>,
+    ) => {
+      state.access = action.payload.access;
+      state.refresh = action.payload.refresh;
+      saveTokens(action.payload.access, action.payload.refresh);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -175,6 +187,9 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.error = null;
         state.fieldErrors = null;
+        // Обновляем токены из localStorage
+        state.access = getAccessToken();
+        state.refresh = getRefreshToken();
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = 'failed';
@@ -187,6 +202,9 @@ const authSlice = createSlice({
         if (action.payload) {
           state.user = action.payload;
           state.isAuthenticated = true;
+          // Обновляем токены из localStorage
+          state.access = getAccessToken();
+          state.refresh = getRefreshToken();
         }
       })
       .addCase(initializeAuth.rejected, (state, action) => {
@@ -201,10 +219,13 @@ const authSlice = createSlice({
         state.status = 'idle';
         state.error = null;
         state.fieldErrors = null;
+        state.access = null;
+        state.refresh = null;
       });
   },
 });
 
-export const { clearAuthError, clearRegistrationMessage } = authSlice.actions;
+export const { clearAuthError, clearRegistrationMessage, updateTokens } =
+  authSlice.actions;
 
 export default authSlice.reducer;

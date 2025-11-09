@@ -167,9 +167,20 @@
   stroke: #ffffff;
 }
 
-.trackTimeSvg.active {
-  fill: #1ed760;
-  stroke: #1ed760;
+.likeButton {
+  position: relative;
+  transition:
+    transform 0.2s ease,
+    stroke 0.2s ease;
+}
+
+.likeButton:active {
+  transform: scale(0.9);
+}
+
+.likeButton.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .trackTimeText {
