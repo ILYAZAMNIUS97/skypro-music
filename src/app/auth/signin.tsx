@@ -40,6 +40,8 @@ export default function Signin() {
   useEffect(() => {
     if (error) {
       setLocalError(error);
+    } else {
+      setLocalError(null);
     }
   }, [error]);
 
