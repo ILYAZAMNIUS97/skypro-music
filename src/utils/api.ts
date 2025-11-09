@@ -235,40 +235,54 @@ export const tracksApi = {
 
   // Получить избранные треки
   getFavoriteTracks: async (): Promise<ApiTrack[]> => {
-    try {
-      const headers = await createAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/catalog/track/favorite/all/`,
-        {
-          headers,
-        },
-      );
+    let headers = await createAuthHeaders();
+    let response = await fetch(`${API_BASE_URL}/catalog/track/favorite/all/`, {
+      headers,
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // Если получили 401, пытаемся обновить токен и повторить запрос
+    if (response.status === 401) {
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        try {
+          const newAccessToken = await refreshAccessToken();
+          if (newAccessToken) {
+            headers = await createAuthHeaders();
+            response = await fetch(
+              `${API_BASE_URL}/catalog/track/favorite/all/`,
+              {
+                headers,
+              },
+            );
+          }
+        } catch (refreshError) {
+          console.error('Ошибка обновления токена:', refreshError);
+          throw new Error('Не удалось обновить токен доступа');
+        }
       }
+    }
 
-      const data = await response.json();
-      console.log(
-        'Favorite API Response received, tracks count:',
-        data.data?.length || 0,
-      );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-      // Проверяем формат ответа
-      if (Array.isArray(data)) {
-        return data;
-      } else if (data.results && Array.isArray(data.results)) {
-        return data.results;
-      } else if (data.data && Array.isArray(data.data)) {
-        // API возвращает данные в формате {success: true, data: Array}
-        return data.data;
-      } else {
-        console.error('Неожиданный формат ответа API для избранных:', data);
-        return [];
-      }
-    } catch (error) {
-      console.error('Ошибка получения избранных треков:', error);
-      throw error;
+    const data = await response.json();
+    console.log(
+      'Favorite API Response received, tracks count:',
+      data.data?.length || 0,
+    );
+
+    // Проверяем формат ответа
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data.results && Array.isArray(data.results)) {
+      return data.results;
+    } else if (data.data && Array.isArray(data.data)) {
+      // API возвращает данные в формате {success: true, data: Array}
+      return data.data;
+    } else {
+      console.error('Неожиданный формат ответа API для избранных:', data);
+      return [];
     }
   },
 
@@ -344,43 +358,79 @@ export const tracksApi = {
 
   // Добавить трек в избранное
   addToFavorites: async (id: number): Promise<void> => {
-    try {
-      const headers = await createAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/catalog/track/${id}/favorite/`,
-        {
-          method: 'POST',
-          headers,
-        },
-      );
+    let headers = await createAuthHeaders();
+    let response = await fetch(
+      `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+      {
+        method: 'POST',
+        headers,
+      },
+    );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // Если получили 401, пытаемся обновить токен и повторить запрос
+    if (response.status === 401) {
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        try {
+          const newAccessToken = await refreshAccessToken();
+          if (newAccessToken) {
+            headers = await createAuthHeaders();
+            response = await fetch(
+              `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+              {
+                method: 'POST',
+                headers,
+              },
+            );
+          }
+        } catch (refreshError) {
+          console.error('Ошибка обновления токена:', refreshError);
+          throw new Error('Не удалось обновить токен доступа');
+        }
       }
-    } catch (error) {
-      console.error(`Ошибка добавления трека ${id} в избранное:`, error);
-      throw error;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
   },
 
   // Удалить трек из избранного
   removeFromFavorites: async (id: number): Promise<void> => {
-    try {
-      const headers = await createAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/catalog/track/${id}/favorite/`,
-        {
-          method: 'DELETE',
-          headers,
-        },
-      );
+    let headers = await createAuthHeaders();
+    let response = await fetch(
+      `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+      {
+        method: 'DELETE',
+        headers,
+      },
+    );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // Если получили 401, пытаемся обновить токен и повторить запрос
+    if (response.status === 401) {
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        try {
+          const newAccessToken = await refreshAccessToken();
+          if (newAccessToken) {
+            headers = await createAuthHeaders();
+            response = await fetch(
+              `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+              {
+                method: 'DELETE',
+                headers,
+              },
+            );
+          }
+        } catch (refreshError) {
+          console.error('Ошибка обновления токена:', refreshError);
+          throw new Error('Не удалось обновить токен доступа');
+        }
       }
-    } catch (error) {
-      console.error(`Ошибка удаления трека ${id} из избранного:`, error);
-      throw error;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
   },
 };
