@@ -40,8 +40,12 @@ export const Sidebar = () => {
       <div className={styles.sidebarBlock}>
         <div className={styles.sidebarList}>
           {selections.map(([slug, config]) => (
-            <div className={styles.sidebarItem} key={slug}>
-              <Link className={styles.sidebarLink} href={`/playlist/${slug}`}>
+            <Link
+              className={styles.sidebarItem}
+              href={`/playlist/${slug}`}
+              key={slug}
+            >
+              <div className={styles.sidebarLink}>
                 <Image
                   className={styles.sidebarImg}
                   src={config.imageSrc}
@@ -49,8 +53,8 @@ export const Sidebar = () => {
                   fill
                   sizes="250px"
                 />
-              </Link>
-            </div>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
