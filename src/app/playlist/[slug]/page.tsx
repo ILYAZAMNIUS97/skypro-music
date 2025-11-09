@@ -29,7 +29,7 @@ export default async function PlaylistPage({ params }: PlaylistPageProps) {
   try {
     const selection = await tracksApi.getSelectionById(selectionConfig.id);
 
-    const transformedTracks = selection.items
+    const transformedTracks: Track[] = selection.items
       .map(transformApiTrack)
       .filter((track): track is Track => track !== null);
 

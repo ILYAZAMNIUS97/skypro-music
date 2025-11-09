@@ -1,5 +1,7 @@
 // API сервис для работы с треками SkyPro Music
 
+import { type Track } from '@/types/track';
+
 export const API_BASE_URL = 'https://webdev-music-003b5b991590.herokuapp.com';
 
 // Интерфейс для ответа API треков
@@ -381,7 +383,7 @@ export const tracksApi = {
 };
 
 // Функция для преобразования API трека в формат приложения
-export const transformApiTrack = (apiTrack: ApiTrack) => {
+export const transformApiTrack = (apiTrack: ApiTrack): Track | null => {
   // Проверяем, что у трека есть все необходимые поля
   if (!apiTrack || !apiTrack._id || !apiTrack.name) {
     console.error('Некорректные данные трека:', apiTrack);
@@ -393,7 +395,7 @@ export const transformApiTrack = (apiTrack: ApiTrack) => {
     ? apiTrack.genre.join(', ')
     : apiTrack.genre || 'Неизвестный жанр';
 
-  const transformedTrack = {
+  const transformedTrack: Track = {
     title: apiTrack.name || 'Неизвестный трек',
     author: apiTrack.author || 'Неизвестный исполнитель',
     album: apiTrack.album || 'Неизвестный альбом',
