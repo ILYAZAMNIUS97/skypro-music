@@ -44,7 +44,7 @@ export const Navigation = () => {
             </Link>
           </li>
           <li className={styles.menuItem}>
-            <Link href="/playlist" className={styles.menuLink}>
+            <Link href="/favorite" className={styles.menuLink}>
               Мой плейлист
             </Link>
           </li>

@@ -102,6 +102,18 @@ export const Playlist = ({ initialTracks, errorMessage }: PlaylistProps) => {
               Повторить
             </button>
           )}
+          {hasInitialTracksProp && errorMessage && (
+            <button
+              onClick={() => {
+                // Для страницы избранного нужно перезагрузить данные
+                // Это будет обработано родительским компонентом
+                window.location.reload();
+              }}
+              className={styles.retryButton}
+            >
+              Обновить страницу
+            </button>
+          )}
         </div>
       </div>
     );
