@@ -29,6 +29,20 @@ export default function FavoritePage() {
     }
   }, [dispatch, isAuthenticated]);
 
+  // Обработка события для повторной загрузки избранных треков
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleRefetch = () => {
+      dispatch(fetchFavoriteTracks());
+    };
+
+    window.addEventListener('refetch-favorites', handleRefetch);
+    return () => {
+      window.removeEventListener('refetch-favorites', handleRefetch);
+    };
+  }, [dispatch, isAuthenticated]);
+
   // Если пользователь не авторизован, не показываем контент
   if (!isAuthenticated) {
     return null;

@@ -114,12 +114,12 @@ export const Playlist = ({ initialTracks, errorMessage }: PlaylistProps) => {
             <button
               onClick={() => {
                 // Для страницы избранного нужно перезагрузить данные
-                // Это будет обработано родительским компонентом
-                window.location.reload();
+                // Это будет обработано родительским компонентом через событие
+                window.dispatchEvent(new Event('refetch-favorites'));
               }}
               className={styles.retryButton}
             >
-              Обновить страницу
+              Повторить
             </button>
           )}
         </div>
