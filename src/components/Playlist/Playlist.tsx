@@ -12,6 +12,42 @@ interface PlaylistProps {
   errorMessage?: string | null;
 }
 
+/**
+ * Сравнивает два массива треков по содержимому
+ * Использует trackId для сравнения, если доступен, иначе сравнивает по ключевым полям
+ */
+function areTracksEqual(
+  tracks1: TrackType[] | undefined,
+  tracks2: TrackType[] | undefined,
+): boolean {
+  if (tracks1 === tracks2) return true;
+  if (!tracks1 || !tracks2) return false;
+  if (tracks1.length !== tracks2.length) return false;
+
+  for (let i = 0; i < tracks1.length; i++) {
+    const track1 = tracks1[i];
+    const track2 = tracks2[i];
+
+    // Сравнение по trackId, если доступен
+    if (track1.trackId && track2.trackId) {
+      if (track1.trackId !== track2.trackId) return false;
+      continue;
+    }
+
+    // Сравнение по ключевым полям, если trackId отсутствует
+    if (
+      track1.title !== track2.title ||
+      track1.author !== track2.author ||
+      track1.album !== track2.album ||
+      track1.time !== track2.time
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export const Playlist = ({ initialTracks, errorMessage }: PlaylistProps) => {
   const dispatch = useAppDispatch();
   const { playlist, isLoading, error } = useAppSelector(
@@ -26,7 +62,7 @@ export const Playlist = ({ initialTracks, errorMessage }: PlaylistProps) => {
       return;
     }
 
-    if (previousInitialTracks.current !== initialTracks) {
+    if (!areTracksEqual(previousInitialTracks.current, initialTracks)) {
       dispatch(clearError());
       dispatch(setPlaylist(initialTracks ?? []));
       previousInitialTracks.current = initialTracks;
