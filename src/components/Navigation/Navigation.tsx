@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import classNames from 'classnames';
@@ -14,10 +14,10 @@ export const Navigation = () => {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await dispatch(logoutUser());
     setIsMenuOpen(false);
-  };
+  }, [dispatch]);
 
   return (
     <nav className={styles.nav}>

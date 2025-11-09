@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { addLikedTracks, removeLikedTracks } from '@/store/tracksSlice';
 import { addLike, removeLike, withReauth } from '@/utils/api';
@@ -19,11 +19,14 @@ export const useLikeTrack = (track: TrackType | null): ReturnTypeHook => {
   const { access, refresh } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
 
-  const isLike = favoriteTracks.some((t) => t.trackId === track?.trackId);
+  const isLike = useMemo(
+    () => favoriteTracks.some((t) => t.trackId === track?.trackId),
+    [favoriteTracks, track?.trackId],
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const toggleLike = () => {
+  const toggleLike = useCallback(() => {
     if (!access) {
       return setErrorMsg('Нет авторизации');
     }
@@ -65,7 +68,7 @@ export const useLikeTrack = (track: TrackType | null): ReturnTypeHook => {
           setIsLoading(false);
         });
     }
-  };
+  }, [access, isLike, track, refresh, dispatch]);
 
   return {
     isLoading,

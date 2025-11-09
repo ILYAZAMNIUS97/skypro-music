@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import cn from 'classnames';
 import styles from './Track.module.css';
@@ -28,28 +29,49 @@ export const Track = ({ track }: TrackProps) => {
   const { toggleLike, isLike, isLoading, errorMsg } = useLikeTrack(track);
 
   // Проверяем, является ли этот трек текущим
-  const isCurrentTrack = state.currentTrack?.trackId === trackId;
-  const isPlaying = state.isPlaying && isCurrentTrack;
+  const isCurrentTrack = useMemo(
+    () => state.currentTrack?.trackId === trackId,
+    [state.currentTrack?.trackId, trackId],
+  );
+  const isPlaying = useMemo(
+    () => state.isPlaying && isCurrentTrack,
+    [state.isPlaying, isCurrentTrack],
+  );
+
+  // Мемоизируем данные трека для плеера
+  const trackData = useMemo(
+    () => ({
+      title,
+      titleSpan,
+      author,
+      album,
+      time,
+      genre,
+      trackId,
+      authorId,
+      albumId,
+      src,
+      isFavorite,
+    }),
+    [
+      title,
+      titleSpan,
+      author,
+      album,
+      time,
+      genre,
+      trackId,
+      authorId,
+      albumId,
+      src,
+      isFavorite,
+    ],
+  );
 
   // Обработчик клика по треку для воспроизведения
-  const handleTrackClick = () => {
+  const handleTrackClick = useCallback(() => {
     // Проверяем, что у трека есть аудиофайл
     if (src) {
-      // Создаем объект трека для плеера
-      const trackData = {
-        title,
-        titleSpan,
-        author,
-        album,
-        time,
-        genre,
-        trackId,
-        authorId,
-        albumId,
-        src,
-        isFavorite,
-      };
-
       // Используем текущий плейлист из Redux
       dispatch(
         playTrackWithPlaylist({ track: trackData, playlist: state.playlist }),
@@ -57,13 +79,23 @@ export const Track = ({ track }: TrackProps) => {
     } else {
       alert('Аудиофайл недоступен');
     }
-  };
+  }, [src, dispatch, trackData, state.playlist]);
 
   // Обработчик для лайка/дизлайка
-  const handleLikeClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Предотвращаем клик по треку
-    toggleLike();
-  };
+  const handleLikeClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation(); // Предотвращаем клик по треку
+      toggleLike();
+    },
+    [toggleLike],
+  );
+
+  // Мемоизируем title для кнопки лайка
+  const likeButtonTitle = useMemo(
+    () =>
+      errorMsg || (isLike ? 'Убрать из избранного' : 'Добавить в избранное'),
+    [errorMsg, isLike],
+  );
 
   return (
     <div className={styles.playlistItem} data-genre={genre}>
@@ -113,10 +145,7 @@ export const Track = ({ track }: TrackProps) => {
             onClick={handleLikeClick}
             type="button"
             disabled={isLoading}
-            title={
-              errorMsg ||
-              (isLike ? 'Убрать из избранного' : 'Добавить в избранное')
-            }
+            title={likeButtonTitle}
           >
             <svg className={styles.trackTimeSvg}>
               <use

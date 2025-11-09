@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import cn from 'classnames';
 import Link from 'next/link';
 import styles from './Player.module.css';
@@ -34,7 +34,7 @@ export const Player = () => {
   }, [dispatch, state.playlist.length]);
 
   // Функции для управления плеером
-  const play = async () => {
+  const play = useCallback(async () => {
     if (audioRef.current) {
       try {
         console.log(
@@ -61,18 +61,18 @@ export const Player = () => {
         // Если воспроизведение не удалось, не меняем состояние
       }
     }
-  };
+  }, [dispatch]);
 
-  const pause = () => {
+  const pause = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       dispatch(pauseAudio()); // Используем простой action для паузы
       console.log('🎵 Пауза');
     }
-  };
+  }, [dispatch]);
 
   // Обработчики для кнопок управления
-  const handlePlayClick = () => {
+  const handlePlayClick = useCallback(() => {
     // Добавляем небольшую задержку для предотвращения быстрых переключений
     setTimeout(() => {
       if (state.isPlaying) {
@@ -81,44 +81,50 @@ export const Player = () => {
         play();
       }
     }, 50);
-  };
+  }, [state.isPlaying, pause, play]);
 
-  const handlePrevClick = () => {
+  const handlePrevClick = useCallback(() => {
     dispatch(prevTrack());
-  };
+  }, [dispatch]);
 
-  const handleNextClick = () => {
+  const handleNextClick = useCallback(() => {
     dispatch(nextTrack());
-  };
+  }, [dispatch]);
 
-  const handleRepeatClick = () => {
+  const handleRepeatClick = useCallback(() => {
     console.log('Переключаем режим повтора. Текущий режим:', state.repeatMode);
     dispatch(toggleRepeat());
     // Добавляем небольшую задержку для проверки обновления состояния
     setTimeout(() => {
       console.log('Новый режим повтора после переключения:', state.repeatMode);
     }, 100);
-  };
+  }, [dispatch, state.repeatMode]);
 
-  const handleShuffleClick = () => {
+  const handleShuffleClick = useCallback(() => {
     dispatch(toggleShuffle());
-  };
+  }, [dispatch]);
 
   // Обработчик для прогресс-бара
-  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = parseFloat(e.target.value);
-    if (audioRef.current) {
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      console.log('🎵 Перемещение прогресс-бара на:', newTime);
-    }
-  };
+  const handleProgressChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newTime = parseFloat(e.target.value);
+      if (audioRef.current) {
+        audioRef.current.currentTime = newTime;
+        setCurrentTime(newTime);
+        console.log('🎵 Перемещение прогресс-бара на:', newTime);
+      }
+    },
+    [],
+  );
 
   // Обработчик для громкости
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    dispatch(setVolumeLevel(newVolume));
-  };
+  const handleVolumeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newVolume = parseFloat(e.target.value);
+      dispatch(setVolumeLevel(newVolume));
+    },
+    [dispatch],
+  );
 
   // Хук для работы с лайками
   const { toggleLike, isLike, isLoading, errorMsg } = useLikeTrack(
@@ -126,9 +132,9 @@ export const Player = () => {
   );
 
   // Обработчики для лайка/дизлайка
-  const handleLikeClick = () => {
+  const handleLikeClick = useCallback(() => {
     toggleLike();
-  };
+  }, [toggleLike]);
 
   // Обработчики событий аудио элемента
   useEffect(() => {
@@ -513,14 +519,35 @@ export const Player = () => {
   }, [state.currentTrack, state.repeatMode]);
 
   // Форматирование времени
-  const formatTime = (seconds: number): string => {
+  const formatTime = useCallback((seconds: number): string => {
     if (!isFinite(seconds) || isNaN(seconds)) {
       return '00:00';
     }
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, []);
+
+  // Мемоизируем отформатированное время
+  const formattedCurrentTime = useMemo(
+    () => formatTime(currentTime),
+    [currentTime, formatTime],
+  );
+  const formattedDuration = useMemo(
+    () => formatTime(state.duration || 0),
+    [state.duration, formatTime],
+  );
+
+  // Мемоизируем title для кнопки повтора
+  const repeatButtonTitle = useMemo(
+    () =>
+      state.repeatMode === 'off'
+        ? 'Повтор выключен'
+        : state.repeatMode === 'one'
+          ? 'Повтор одного трека'
+          : 'Повтор всего плейлиста',
+    [state.repeatMode],
+  );
 
   // Вычисляем прогресс в процентах (пока не используется, но может пригодиться)
   // const progressPercent = useMemo(() => {
@@ -574,10 +601,8 @@ export const Player = () => {
 
         {/* Время трека */}
         <div className={styles.timeContainer}>
-          <span className={styles.currentTime}>{formatTime(currentTime)}</span>
-          <span className={styles.totalTime}>
-            {formatTime(state.duration || 0)}
-          </span>
+          <span className={styles.currentTime}>{formattedCurrentTime}</span>
+          <span className={styles.totalTime}>{formattedDuration}</span>
         </div>
 
         <div className={styles.barPlayerBlock}>
@@ -621,13 +646,7 @@ export const Player = () => {
                   [styles.active]: state.isRepeat,
                 })}
                 onClick={handleRepeatClick}
-                title={
-                  state.repeatMode === 'off'
-                    ? 'Повтор выключен'
-                    : state.repeatMode === 'one'
-                      ? 'Повтор одного трека'
-                      : 'Повтор всего плейлиста'
-                }
+                title={repeatButtonTitle}
               >
                 <svg className={styles.playerBtnRepeatSvg}>
                   <use href="/img/icon/sprite.svg#icon-repeat"></use>

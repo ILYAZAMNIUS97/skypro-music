@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import { type FC, useMemo, useCallback } from 'react';
 import classNames from 'classnames';
 import styles from './GenreDialog.module.css';
 import { type Track } from '../../types/track';
@@ -19,15 +19,18 @@ export const GenreDialog: FC<GenreDialogProps> = ({
   selectedGenre,
   tracks,
 }) => {
-  if (!isOpen) return null;
-
-  const handleGenreClick = (genre: string) => {
-    onSelectGenre(genre);
-    onClose();
-  };
-
   // Получаем уникальные жанры из треков
-  const uniqueGenres = getUniqueGenres(tracks);
+  const uniqueGenres = useMemo(() => getUniqueGenres(tracks), [tracks]);
+
+  const handleGenreClick = useCallback(
+    (genre: string) => {
+      onSelectGenre(genre);
+      onClose();
+    },
+    [onSelectGenre, onClose],
+  );
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.dialog}>

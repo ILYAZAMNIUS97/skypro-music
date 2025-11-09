@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import classNames from 'classnames';
 import styles from './Filter.module.css';
 import { ArtistDialog } from './ArtistDialog';
@@ -20,65 +20,78 @@ export const Filter = () => {
   const filterRef = useRef<HTMLDivElement>(null);
 
   // Закрываем все диалоги при клике вне компонента
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target as Node)
-      ) {
-        setIsArtistDialogOpen(false);
-        setIsYearDialogOpen(false);
-        setIsGenreDialogOpen(false);
-      }
-    };
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (
+      filterRef.current &&
+      !filterRef.current.contains(event.target as Node)
+    ) {
+      setIsArtistDialogOpen(false);
+      setIsYearDialogOpen(false);
+      setIsGenreDialogOpen(false);
+    }
+  }, []);
 
+  useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, [handleClickOutside]);
+
+  const handleArtistClick = useCallback(() => {
+    // Закрываем другие диалоги
+    setIsYearDialogOpen(false);
+    setIsGenreDialogOpen(false);
+    // Переключаем текущий диалог
+    setIsArtistDialogOpen((prev) => !prev);
   }, []);
 
-  const handleArtistClick = () => {
-    // Закрываем другие диалоги
-    setIsYearDialogOpen(false);
-    setIsGenreDialogOpen(false);
-    // Переключаем текущий диалог
-    setIsArtistDialogOpen(!isArtistDialogOpen);
-  };
-
-  const handleYearClick = () => {
+  const handleYearClick = useCallback(() => {
     // Закрываем другие диалоги
     setIsArtistDialogOpen(false);
     setIsGenreDialogOpen(false);
     // Переключаем текущий диалог
-    setIsYearDialogOpen(!isYearDialogOpen);
-  };
+    setIsYearDialogOpen((prev) => !prev);
+  }, []);
 
-  const handleGenreClick = () => {
+  const handleGenreClick = useCallback(() => {
     // Закрываем другие диалоги
     setIsArtistDialogOpen(false);
     setIsYearDialogOpen(false);
     // Переключаем текущий диалог
-    setIsGenreDialogOpen(!isGenreDialogOpen);
-  };
+    setIsGenreDialogOpen((prev) => !prev);
+  }, []);
 
-  const handleSelectArtist = (artist: string) => {
+  const handleSelectArtist = useCallback((artist: string) => {
     setSelectedArtist(artist);
     console.log('Выбран исполнитель:', artist);
     // Здесь можно добавить логику фильтрации
-  };
+  }, []);
 
-  const handleSelectYear = (yearOption: string) => {
+  const handleSelectYear = useCallback((yearOption: string) => {
     setSelectedYear(yearOption);
     console.log('Выбрана сортировка по году:', yearOption);
     // Здесь можно добавить логику сортировки
-  };
+  }, []);
 
-  const handleSelectGenre = (genre: string) => {
+  const handleSelectGenre = useCallback((genre: string) => {
     setSelectedGenre(genre);
     console.log('Выбран жанр:', genre);
     // Здесь можно добавить логику фильтрации
-  };
+  }, []);
+
+  // Мемоизируем колбэки для закрытия диалогов
+  const handleCloseArtistDialog = useCallback(() => {
+    setIsArtistDialogOpen(false);
+  }, []);
+
+  const handleCloseYearDialog = useCallback(() => {
+    setIsYearDialogOpen(false);
+  }, []);
+
+  const handleCloseGenreDialog = useCallback(() => {
+    setIsGenreDialogOpen(false);
+  }, []);
 
   return (
     <>
@@ -96,7 +109,7 @@ export const Filter = () => {
           {isArtistDialogOpen && (
             <ArtistDialog
               isOpen={isArtistDialogOpen}
-              onClose={() => setIsArtistDialogOpen(false)}
+              onClose={handleCloseArtistDialog}
               onSelectArtist={handleSelectArtist}
               selectedArtist={selectedArtist}
               tracks={tracks}
@@ -115,7 +128,7 @@ export const Filter = () => {
           {isYearDialogOpen && (
             <YearDialog
               isOpen={isYearDialogOpen}
-              onClose={() => setIsYearDialogOpen(false)}
+              onClose={handleCloseYearDialog}
               onSelectYear={handleSelectYear}
               selectedYear={selectedYear}
             />
@@ -133,7 +146,7 @@ export const Filter = () => {
           {isGenreDialogOpen && (
             <GenreDialog
               isOpen={isGenreDialogOpen}
-              onClose={() => setIsGenreDialogOpen(false)}
+              onClose={handleCloseGenreDialog}
               onSelectGenre={handleSelectGenre}
               selectedGenre={selectedGenre}
               tracks={tracks}
