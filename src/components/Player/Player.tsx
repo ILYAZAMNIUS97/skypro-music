@@ -22,6 +22,7 @@ import { useLikeTrack } from '@/hooks/useLikeTrack';
 export const Player = () => {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.player);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [previousTrackId, setPreviousTrackId] = useState<string | null>(null);
@@ -135,6 +136,16 @@ export const Player = () => {
   const handleLikeClick = useCallback(() => {
     toggleLike();
   }, [toggleLike]);
+
+  // Определяем иконку лайка в зависимости от авторизации
+  const likeIcon = useMemo(() => {
+    // Если не авторизован - зачеркнутое сердце
+    if (!isAuthenticated) {
+      return 'dislike';
+    }
+    // Если авторизован - обычное сердце (не зачеркнутое)
+    return 'like';
+  }, [isAuthenticated]);
 
   // Обработчики событий аудио элемента
   useEffect(() => {
@@ -715,6 +726,7 @@ export const Player = () => {
                     styles.likeButton,
                     {
                       [styles.loading]: isLoading,
+                      [styles.liked]: isAuthenticated && isLike,
                     },
                   )}
                   onClick={handleLikeClick}
@@ -725,9 +737,7 @@ export const Player = () => {
                   }
                 >
                   <svg className={styles.trackPlayLikeSvg}>
-                    <use
-                      href={`/img/icon/sprite.svg#icon-${isLike ? 'like' : 'dislike'}`}
-                    ></use>
+                    <use href={`/img/icon/sprite.svg#icon-${likeIcon}`}></use>
                   </svg>
                 </button>
               </div>

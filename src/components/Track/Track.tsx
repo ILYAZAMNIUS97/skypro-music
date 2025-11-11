@@ -26,6 +26,7 @@ export const Track = ({ track }: TrackProps) => {
 
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.player);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { toggleLike, isLike, isLoading, errorMsg } = useLikeTrack(track);
 
   // Проверяем, является ли этот трек текущим
@@ -97,6 +98,16 @@ export const Track = ({ track }: TrackProps) => {
     [errorMsg, isLike],
   );
 
+  // Определяем иконку лайка в зависимости от авторизации
+  const likeIcon = useMemo(() => {
+    // Если не авторизован - зачеркнутое сердце
+    if (!isAuthenticated) {
+      return 'dislike';
+    }
+    // Если авторизован - обычное сердце (не зачеркнутое)
+    return 'like';
+  }, [isAuthenticated]);
+
   return (
     <div className={styles.playlistItem} data-genre={genre}>
       <div className={styles.playlistTrack}>
@@ -141,6 +152,7 @@ export const Track = ({ track }: TrackProps) => {
           <button
             className={cn(styles.trackTimeSvg, styles.likeButton, {
               [styles.loading]: isLoading,
+              [styles.liked]: isAuthenticated && isLike,
             })}
             onClick={handleLikeClick}
             type="button"
@@ -148,9 +160,7 @@ export const Track = ({ track }: TrackProps) => {
             title={likeButtonTitle}
           >
             <svg className={styles.trackTimeSvg}>
-              <use
-                href={`/img/icon/sprite.svg#icon-${isLike ? 'like' : 'dislike'}`}
-              ></use>
+              <use href={`/img/icon/sprite.svg#icon-${likeIcon}`}></use>
             </svg>
           </button>
           <span className={styles.trackTimeText}>{time}</span>

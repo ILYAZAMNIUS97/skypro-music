@@ -480,7 +480,8 @@
   position: relative;
   transition:
     transform 0.2s ease,
-    stroke 0.2s ease;
+    stroke 0.2s ease,
+    fill 0.2s ease;
 }
 
 .likeButton:active {
@@ -490,6 +491,17 @@
 .likeButton.loading {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Стиль для лайкнутого трека (фиолетовое сердечко) */
+.likeButton.liked svg {
+  fill: #ad61ff;
+  stroke: #ad61ff;
+}
+
+.likeButton.liked:hover svg {
+  fill: #b672ff;
+  stroke: #b672ff;
 }
 
 /* Активные состояния для кнопок */
