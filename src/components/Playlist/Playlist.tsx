@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { Track } from '../Track/Track';
 import styles from './Playlist.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -75,11 +75,19 @@ export const Playlist = ({ initialTracks, errorMessage }: PlaylistProps) => {
     }
   }, [dispatch, hasInitialTracksProp, playlist.length]);
 
-  const displayLoading = !hasInitialTracksProp && isLoading;
-  const displayError = errorMessage ?? (hasInitialTracksProp ? null : error);
-  const tracksToRender = hasInitialTracksProp
-    ? (initialTracks ?? [])
-    : playlist;
+  // Мемоизируем вычисления для отображения
+  const displayLoading = useMemo(
+    () => !hasInitialTracksProp && isLoading,
+    [hasInitialTracksProp, isLoading],
+  );
+  const displayError = useMemo(
+    () => errorMessage ?? (hasInitialTracksProp ? null : error),
+    [errorMessage, hasInitialTracksProp, error],
+  );
+  const tracksToRender = useMemo(
+    () => (hasInitialTracksProp ? (initialTracks ?? []) : playlist),
+    [hasInitialTracksProp, initialTracks, playlist],
+  );
 
   if (displayLoading) {
     return (
@@ -97,6 +105,18 @@ export const Playlist = ({ initialTracks, errorMessage }: PlaylistProps) => {
           {!hasInitialTracksProp && (
             <button
               onClick={() => dispatch(fetchTracks())}
+              className={styles.retryButton}
+            >
+              Повторить
+            </button>
+          )}
+          {hasInitialTracksProp && errorMessage && (
+            <button
+              onClick={() => {
+                // Для страницы избранного нужно перезагрузить данные
+                // Это будет обработано родительским компонентом через событие
+                window.dispatchEvent(new Event('refetch-favorites'));
+              }}
               className={styles.retryButton}
             >
               Повторить

@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import { type FC, useMemo, useCallback } from 'react';
 import classNames from 'classnames';
 import styles from './ArtistDialog.module.css';
 import { type Track } from '../../types/track';
@@ -19,15 +19,18 @@ export const ArtistDialog: FC<ArtistDialogProps> = ({
   selectedArtist,
   tracks,
 }) => {
-  if (!isOpen) return null;
-
-  const handleArtistClick = (artist: string) => {
-    onSelectArtist(artist);
-    onClose();
-  };
-
   // Получаем уникальных авторов из треков
-  const uniqueAuthors = getUniqueAuthors(tracks);
+  const uniqueAuthors = useMemo(() => getUniqueAuthors(tracks), [tracks]);
+
+  const handleArtistClick = useCallback(
+    (artist: string) => {
+      onSelectArtist(artist);
+      onClose();
+    },
+    [onSelectArtist, onClose],
+  );
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.dialog}>

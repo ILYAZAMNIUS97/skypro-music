@@ -44,6 +44,9 @@ export interface ApiSelection {
 type SelectionItemsRaw = Array<ApiTrack | number | string | null | undefined>;
 
 import { getAccessToken, getRefreshToken, saveTokens } from './auth';
+import { authApi } from './authApi';
+import type { AppDispatch } from '@/store/store';
+import { updateTokens } from '@/store/authSlice';
 
 // Функция для обновления access токена
 const refreshAccessToken = async (): Promise<string | null> => {
@@ -232,40 +235,54 @@ export const tracksApi = {
 
   // Получить избранные треки
   getFavoriteTracks: async (): Promise<ApiTrack[]> => {
-    try {
-      const headers = await createAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/catalog/track/favorite/all/`,
-        {
-          headers,
-        },
-      );
+    let headers = await createAuthHeaders();
+    let response = await fetch(`${API_BASE_URL}/catalog/track/favorite/all/`, {
+      headers,
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // Если получили 401, пытаемся обновить токен и повторить запрос
+    if (response.status === 401) {
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        try {
+          const newAccessToken = await refreshAccessToken();
+          if (newAccessToken) {
+            headers = await createAuthHeaders();
+            response = await fetch(
+              `${API_BASE_URL}/catalog/track/favorite/all/`,
+              {
+                headers,
+              },
+            );
+          }
+        } catch (refreshError) {
+          console.error('Ошибка обновления токена:', refreshError);
+          throw new Error('Не удалось обновить токен доступа');
+        }
       }
+    }
 
-      const data = await response.json();
-      console.log(
-        'Favorite API Response received, tracks count:',
-        data.data?.length || 0,
-      );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-      // Проверяем формат ответа
-      if (Array.isArray(data)) {
-        return data;
-      } else if (data.results && Array.isArray(data.results)) {
-        return data.results;
-      } else if (data.data && Array.isArray(data.data)) {
-        // API возвращает данные в формате {success: true, data: Array}
-        return data.data;
-      } else {
-        console.error('Неожиданный формат ответа API для избранных:', data);
-        return [];
-      }
-    } catch (error) {
-      console.error('Ошибка получения избранных треков:', error);
-      throw error;
+    const data = await response.json();
+    console.log(
+      'Favorite API Response received, tracks count:',
+      data.data?.length || 0,
+    );
+
+    // Проверяем формат ответа
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data.results && Array.isArray(data.results)) {
+      return data.results;
+    } else if (data.data && Array.isArray(data.data)) {
+      // API возвращает данные в формате {success: true, data: Array}
+      return data.data;
+    } else {
+      console.error('Неожиданный формат ответа API для избранных:', data);
+      return [];
     }
   },
 
@@ -341,45 +358,217 @@ export const tracksApi = {
 
   // Добавить трек в избранное
   addToFavorites: async (id: number): Promise<void> => {
-    try {
-      const headers = await createAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/catalog/track/${id}/favorite/`,
-        {
-          method: 'POST',
-          headers,
-        },
-      );
+    let headers = await createAuthHeaders();
+    let response = await fetch(
+      `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+      {
+        method: 'POST',
+        headers,
+      },
+    );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // Если получили 401, пытаемся обновить токен и повторить запрос
+    if (response.status === 401) {
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        try {
+          const newAccessToken = await refreshAccessToken();
+          if (newAccessToken) {
+            headers = await createAuthHeaders();
+            response = await fetch(
+              `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+              {
+                method: 'POST',
+                headers,
+              },
+            );
+          }
+        } catch (refreshError) {
+          console.error('Ошибка обновления токена:', refreshError);
+          throw new Error('Не удалось обновить токен доступа');
+        }
       }
-    } catch (error) {
-      console.error(`Ошибка добавления трека ${id} в избранное:`, error);
-      throw error;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
   },
 
   // Удалить трек из избранного
   removeFromFavorites: async (id: number): Promise<void> => {
-    try {
-      const headers = await createAuthHeaders();
-      const response = await fetch(
-        `${API_BASE_URL}/catalog/track/${id}/favorite/`,
-        {
-          method: 'DELETE',
-          headers,
-        },
-      );
+    let headers = await createAuthHeaders();
+    let response = await fetch(
+      `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+      {
+        method: 'DELETE',
+        headers,
+      },
+    );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // Если получили 401, пытаемся обновить токен и повторить запрос
+    if (response.status === 401) {
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        try {
+          const newAccessToken = await refreshAccessToken();
+          if (newAccessToken) {
+            headers = await createAuthHeaders();
+            response = await fetch(
+              `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+              {
+                method: 'DELETE',
+                headers,
+              },
+            );
+          }
+        } catch (refreshError) {
+          console.error('Ошибка обновления токена:', refreshError);
+          throw new Error('Не удалось обновить токен доступа');
+        }
       }
-    } catch (error) {
-      console.error(`Ошибка удаления трека ${id} из избранного:`, error);
-      throw error;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
   },
+};
+
+// Функция для обработки обновления токенов при 401 ошибке
+export const withReauth = async <T>(
+  apiCall: (token: string | null) => Promise<T>,
+  refreshToken: string | null,
+  dispatch: AppDispatch,
+): Promise<T> => {
+  try {
+    // Первая попытка с текущим токеном
+    const accessToken = getAccessToken();
+    return await apiCall(accessToken);
+  } catch (error: unknown) {
+    // Проверяем, является ли ошибка 401 (Unauthorized)
+    // Для fetch API ошибки могут быть в разных форматах
+    let is401 = false;
+    let errorResponse: Response | null = null;
+
+    if (error instanceof Response) {
+      errorResponse = error;
+      is401 = error.status === 401;
+    } else if (
+      error &&
+      typeof error === 'object' &&
+      'response' in error &&
+      (error as { response?: Response }).response instanceof Response
+    ) {
+      errorResponse = (error as { response: Response }).response;
+      is401 = errorResponse.status === 401;
+    }
+
+    if (is401 && errorResponse) {
+      // Пытаемся обновить токен
+      if (!refreshToken) {
+        throw new Error('Нет refresh токена для обновления');
+      }
+
+      try {
+        const { access: newAccessToken } =
+          await authApi.refreshTokens(refreshToken);
+        const currentRefreshToken = getRefreshToken();
+        if (currentRefreshToken) {
+          saveTokens(newAccessToken, currentRefreshToken);
+          // Обновляем токены в Redux через action
+          dispatch(
+            updateTokens({
+              access: newAccessToken,
+              refresh: currentRefreshToken,
+            }),
+          );
+        }
+        // Повторяем запрос с новым токеном
+        return await apiCall(newAccessToken);
+      } catch (refreshError) {
+        // Если обновление токена не удалось, пробрасываем ошибку
+        throw refreshError;
+      }
+    }
+    // Если это не 401 ошибка, пробрасываем её дальше
+    throw error;
+  }
+};
+
+// Обертки для API лайков с поддержкой withReauth
+export const addLike = async (
+  accessToken: string | null,
+  trackId: string,
+): Promise<void> => {
+  if (!accessToken) {
+    throw new Error('Нет токена доступа');
+  }
+
+  const id = parseInt(trackId, 10);
+  if (isNaN(id)) {
+    throw new Error('Некорректный ID трека');
+  }
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+  };
+
+  const response = await fetch(
+    `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+    {
+      method: 'POST',
+      headers,
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error = new Error(
+      errorData.message || `HTTP error! status: ${response.status}`,
+    );
+    // Добавляем response для обработки в withReauth
+    (error as unknown as { response: Response }).response = response;
+    throw error;
+  }
+};
+
+export const removeLike = async (
+  accessToken: string | null,
+  trackId: string,
+): Promise<void> => {
+  if (!accessToken) {
+    throw new Error('Нет токена доступа');
+  }
+
+  const id = parseInt(trackId, 10);
+  if (isNaN(id)) {
+    throw new Error('Некорректный ID трека');
+  }
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+  };
+
+  const response = await fetch(
+    `${API_BASE_URL}/catalog/track/${id}/favorite/`,
+    {
+      method: 'DELETE',
+      headers,
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error = new Error(
+      errorData.message || `HTTP error! status: ${response.status}`,
+    );
+    // Добавляем response для обработки в withReauth
+    (error as unknown as { response: Response }).response = response;
+    throw error;
+  }
 };
 
 // Функция для преобразования API трека в формат приложения

@@ -1,23 +1,26 @@
 'use client';
 
+import { useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Sidebar.module.css';
 import { SELECTIONS_CONFIG } from '@/utils/selectionConfig';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutUser } from '@/store/authSlice';
+import { clearFavoriteTracks } from '@/store/tracksSlice';
 import { useRouter } from 'next/navigation';
 
 export const Sidebar = () => {
-  const selections = Object.entries(SELECTIONS_CONFIG);
+  const selections = useMemo(() => Object.entries(SELECTIONS_CONFIG), []);
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await dispatch(logoutUser());
-    router.push('/auth/signin');
-  };
+    dispatch(clearFavoriteTracks());
+    router.push('/');
+  }, [dispatch, router]);
 
   return (
     <div className={styles.sidebar}>
