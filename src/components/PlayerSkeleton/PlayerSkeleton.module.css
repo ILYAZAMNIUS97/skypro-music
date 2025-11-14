@@ -1,0 +1,187 @@
+.bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(28, 28, 28, 0.5);
+  border-top: none;
+}
+
+.barContent {
+  display: flex;
+  flex-direction: column;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.barPlayerProgress {
+  width: 100%;
+  height: 5px;
+  background: transparent;
+  position: relative;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0 31px;
+  margin-bottom: 3px;
+}
+
+.barPlayerBlock {
+  height: 73px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 0;
+}
+
+.barPlayer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.playerControls {
+  display: flex;
+  flex-direction: row;
+  padding: 0 27px 0 31px;
+  gap: 23px;
+  align-items: center;
+}
+
+.playerTrackPlay {
+  display: flex;
+  flex-direction: row;
+}
+
+.trackPlayContain {
+  width: auto;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: 'image author' 'image album';
+  align-items: center;
+}
+
+.trackPlayImage {
+  width: 51px;
+  height: 51px;
+  background-color: #313131;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  grid-row: 1;
+  grid-column: 1;
+  grid-area: image;
+  border-radius: 2px;
+}
+
+.trackPlayAuthor {
+  grid-row: 1;
+  grid-column: 2;
+  grid-area: author;
+  min-width: 49px;
+}
+
+.trackPlayAlbum {
+  grid-row: 2;
+  grid-column: 2;
+  grid-area: album;
+  min-width: 49px;
+}
+
+.trackPlayDislike {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 26%;
+}
+
+.barVolumeBlock {
+  width: auto;
+  display: flex;
+  align-items: center;
+  padding: 0 92px 0 0;
+}
+
+.volumeContent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: end;
+}
+
+.volumeImage {
+  width: 13px;
+  height: 18px;
+  margin-right: 17px;
+}
+
+.volumeProgress {
+  width: 109px;
+  display: flex;
+  align-items: center;
+}
+
+/* Skeleton элементы */
+.skeletonBox {
+  width: 18px;
+  height: 17px;
+  background: linear-gradient(90deg, #313131 0%, #4e4e4e 50%, #313131 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+.skeletonLine {
+  height: 16px;
+  background: linear-gradient(90deg, #313131 0%, #4e4e4e 50%, #313131 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonButton {
+  width: 15px;
+  height: 14px;
+  background: linear-gradient(90deg, #313131 0%, #4e4e4e 50%, #313131 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+.skeletonProgressBar {
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, #2e2e2e 0%, #4e4e4e 50%, #2e2e2e 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+.skeletonTime {
+  width: 40px;
+  height: 16px;
+  background: linear-gradient(90deg, #313131 0%, #4e4e4e 50%, #313131 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

@@ -49,11 +49,7 @@ export const getUserFromStorage = (): User | null => {
       return null;
     }
     return parsed;
-  } catch (error) {
-    console.error(
-      'Ошибка парсинга данных пользователя из localStorage:',
-      error,
-    );
+  } catch {
     return null;
   }
 };

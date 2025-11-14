@@ -1,0 +1,55 @@
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.contentTitle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.contentPlaylist {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.playlistTitleCol01,
+.playlistTitleCol02,
+.playlistTitleCol03,
+.playlistTitleCol04 {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 2px;
+  color: #696969;
+  text-transform: uppercase;
+}
+
+.playlistTitleCol01 {
+  width: 447px;
+}
+
+.playlistTitleCol02 {
+  width: 321px;
+}
+
+.playlistTitleCol03 {
+  width: 245px;
+}
+
+.playlistTitleCol04 {
+  width: 60px;
+  text-align: end;
+}
+
+.playlistTitleSvg {
+  width: 12px;
+  height: 12px;
+  fill: transparent;
+  stroke: #696969;
+}

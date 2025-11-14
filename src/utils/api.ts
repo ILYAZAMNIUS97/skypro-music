@@ -50,6 +50,11 @@ import { updateTokens } from '@/store/authSlice';
 
 // Функция для обновления access токена
 const refreshAccessToken = async (): Promise<string | null> => {
+  // На сервере не обновляем токены
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
 
@@ -69,8 +74,8 @@ const refreshAccessToken = async (): Promise<string | null> => {
       saveTokens(data.access, refreshToken);
       return data.access;
     }
-  } catch (error) {
-    console.error('Ошибка обновления токена:', error);
+  } catch {
+    // Ошибка обновления токена
   }
 
   return null;
@@ -78,6 +83,13 @@ const refreshAccessToken = async (): Promise<string | null> => {
 
 // Функция для создания заголовков с авторизацией
 const createAuthHeaders = async (): Promise<HeadersInit> => {
+  // На сервере не используем токены из localStorage
+  if (typeof window === 'undefined') {
+    return {
+      'Content-Type': 'application/json',
+    };
+  }
+
   const accessToken = getAccessToken();
 
   if (!accessToken) {
@@ -88,7 +100,33 @@ const createAuthHeaders = async (): Promise<HeadersInit> => {
 
   // Проверяем, не истек ли токен (базовая проверка)
   try {
-    const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
+    const tokenParts = accessToken.split('.');
+    if (tokenParts.length !== 3) {
+      // Некорректный формат токена
+      return {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      };
+    }
+
+    // Используем Buffer на сервере, atob в браузере
+    const base64Url = tokenParts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    let decoded: string;
+
+    if (typeof window !== 'undefined' && typeof atob !== 'undefined') {
+      decoded = atob(base64);
+    } else if (typeof Buffer !== 'undefined') {
+      decoded = Buffer.from(base64, 'base64').toString('utf-8');
+    } else {
+      // Если нет ни atob, ни Buffer, просто используем токен как есть
+      return {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      };
+    }
+
+    const tokenPayload = JSON.parse(decoded);
     const currentTime = Math.floor(Date.now() / 1000);
 
     if (tokenPayload.exp && tokenPayload.exp < currentTime) {
@@ -101,8 +139,8 @@ const createAuthHeaders = async (): Promise<HeadersInit> => {
         };
       }
     }
-  } catch (error) {
-    console.error('Ошибка проверки токена:', error);
+  } catch {
+    // Ошибка проверки токена, используем токен как есть
   }
 
   return {
@@ -187,10 +225,6 @@ export const tracksApi = {
       }
 
       const data = await response.json();
-      console.log(
-        'API Response received, tracks count:',
-        data.data?.length || 0,
-      );
 
       // Проверяем формат ответа
       if (Array.isArray(data)) {
@@ -201,12 +235,10 @@ export const tracksApi = {
         // API возвращает данные в формате {success: true, data: Array}
         return data.data;
       } else {
-        console.error('Неожиданный формат ответа API:', data);
         // Возвращаем пустой массив вместо ошибки
         return [];
       }
     } catch (error) {
-      console.error('Ошибка получения треков:', error);
       throw error;
     }
   },
@@ -228,7 +260,6 @@ export const tracksApi = {
 
       return data as ApiTrack;
     } catch (error) {
-      console.error(`Ошибка получения трека ${id}:`, error);
       throw error;
     }
   },
@@ -255,8 +286,7 @@ export const tracksApi = {
               },
             );
           }
-        } catch (refreshError) {
-          console.error('Ошибка обновления токена:', refreshError);
+        } catch {
           throw new Error('Не удалось обновить токен доступа');
         }
       }
@@ -267,10 +297,6 @@ export const tracksApi = {
     }
 
     const data = await response.json();
-    console.log(
-      'Favorite API Response received, tracks count:',
-      data.data?.length || 0,
-    );
 
     // Проверяем формат ответа
     if (Array.isArray(data)) {
@@ -281,7 +307,6 @@ export const tracksApi = {
       // API возвращает данные в формате {success: true, data: Array}
       return data.data;
     } else {
-      console.error('Неожиданный формат ответа API для избранных:', data);
       return [];
     }
   },
@@ -330,8 +355,7 @@ export const tracksApi = {
           idsToFetch.map(async (trackId) => {
             try {
               return await tracksApi.getTrackById(trackId);
-            } catch (fetchError) {
-              console.error(`Не удалось получить трек ${trackId}:`, fetchError);
+            } catch {
               return null;
             }
           }),
@@ -351,7 +375,6 @@ export const tracksApi = {
         items: tracks,
       };
     } catch (error) {
-      console.error(`Ошибка получения подборки ${id}:`, error);
       throw error;
     }
   },
@@ -383,8 +406,7 @@ export const tracksApi = {
               },
             );
           }
-        } catch (refreshError) {
-          console.error('Ошибка обновления токена:', refreshError);
+        } catch {
           throw new Error('Не удалось обновить токен доступа');
         }
       }
@@ -422,8 +444,7 @@ export const tracksApi = {
               },
             );
           }
-        } catch (refreshError) {
-          console.error('Ошибка обновления токена:', refreshError);
+        } catch {
           throw new Error('Не удалось обновить токен доступа');
         }
       }
@@ -575,7 +596,6 @@ export const removeLike = async (
 export const transformApiTrack = (apiTrack: ApiTrack): Track | null => {
   // Проверяем, что у трека есть все необходимые поля
   if (!apiTrack || !apiTrack._id || !apiTrack.name) {
-    console.error('Некорректные данные трека:', apiTrack);
     return null;
   }
 

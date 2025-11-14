@@ -64,19 +64,16 @@ export const Filter = () => {
 
   const handleSelectArtist = useCallback((artist: string) => {
     setSelectedArtist(artist);
-    console.log('Выбран исполнитель:', artist);
     // Здесь можно добавить логику фильтрации
   }, []);
 
   const handleSelectYear = useCallback((yearOption: string) => {
     setSelectedYear(yearOption);
-    console.log('Выбрана сортировка по году:', yearOption);
     // Здесь можно добавить логику сортировки
   }, []);
 
   const handleSelectGenre = useCallback((genre: string) => {
     setSelectedGenre(genre);
-    console.log('Выбран жанр:', genre);
     // Здесь можно добавить логику фильтрации
   }, []);
 

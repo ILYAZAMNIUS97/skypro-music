@@ -3,6 +3,7 @@
 import { useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import cn from 'classnames';
+import toast from 'react-hot-toast';
 import styles from './Track.module.css';
 import { type TrackProps } from '../../types/track';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
@@ -78,7 +79,7 @@ export const Track = ({ track }: TrackProps) => {
         playTrackWithPlaylist({ track: trackData, playlist: state.playlist }),
       );
     } else {
-      alert('Аудиофайл недоступен');
+      toast.error('Аудиофайл недоступен');
     }
   }, [src, dispatch, trackData, state.playlist]);
 

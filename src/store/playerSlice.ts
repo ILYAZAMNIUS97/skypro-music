@@ -95,7 +95,6 @@ export const toggleFavorite = createAsyncThunk(
       }
       return { trackId, isFavorite: !isFavorite };
     } catch (error) {
-      console.error('Ошибка при изменении избранного:', error);
       return rejectWithValue(
         error instanceof Error ? error.message : 'Ошибка изменения избранного',
       );
@@ -149,13 +148,17 @@ export const playerSlice = createSlice({
           const j = Math.floor(Math.random() * (i + 1));
           [indices[i], indices[j]] = [indices[j], indices[i]];
         }
-        const currentIndex = state.currentTrackIndex > -1 ? state.currentTrackIndex : 0;
+        const currentIndex =
+          state.currentTrackIndex > -1 ? state.currentTrackIndex : 0;
         const pos = indices.indexOf(currentIndex);
         if (pos > -1) {
           state.shuffleOrder = indices;
           state.shufflePosition = pos;
         } else {
-          state.shuffleOrder = [currentIndex, ...indices.filter((i) => i !== currentIndex)];
+          state.shuffleOrder = [
+            currentIndex,
+            ...indices.filter((i) => i !== currentIndex),
+          ];
           state.shufflePosition = 0;
         }
       } else {
@@ -174,7 +177,11 @@ export const playerSlice = createSlice({
       if (state.playlist.length === 0) return;
 
       let nextIndex = state.currentTrackIndex;
-      if (state.isShuffle && state.shuffleOrder && state.shuffleOrder.length > 0) {
+      if (
+        state.isShuffle &&
+        state.shuffleOrder &&
+        state.shuffleOrder.length > 0
+      ) {
         // Память порядка при Shuffle
         if (state.shufflePosition < state.shuffleOrder.length - 1) {
           state.shufflePosition += 1;
@@ -213,7 +220,11 @@ export const playerSlice = createSlice({
       if (state.playlist.length === 0) return;
 
       let prevIndex = state.currentTrackIndex;
-      if (state.isShuffle && state.shuffleOrder && state.shuffleOrder.length > 0) {
+      if (
+        state.isShuffle &&
+        state.shuffleOrder &&
+        state.shuffleOrder.length > 0
+      ) {
         if (state.shufflePosition > 0) {
           state.shufflePosition -= 1;
           prevIndex = state.shuffleOrder[state.shufflePosition];
@@ -282,7 +293,10 @@ export const playerSlice = createSlice({
           state.shuffleOrder = indices;
           state.shufflePosition = pos;
         } else {
-          state.shuffleOrder = [trackIndex, ...indices.filter((i) => i !== trackIndex)];
+          state.shuffleOrder = [
+            trackIndex,
+            ...indices.filter((i) => i !== trackIndex),
+          ];
           state.shufflePosition = 0;
         }
       } else {
