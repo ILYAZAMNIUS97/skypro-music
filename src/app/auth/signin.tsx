@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { clearAuthError, loginUser } from '@/store/authSlice';
 
@@ -27,7 +28,7 @@ export default function Signin() {
   useEffect(() => {
     const registered = searchParams.get('registered');
     if (registered) {
-      setInfoMessage('Регистрация прошла успешно. Авторизуйтесь.');
+      toast.success('Регистрация прошла успешно. Авторизуйтесь.');
     }
   }, [searchParams]);
 
@@ -40,6 +41,7 @@ export default function Signin() {
   useEffect(() => {
     if (error) {
       setLocalError(error);
+      toast.error(error);
     } else {
       setLocalError(null);
     }
@@ -57,7 +59,9 @@ export default function Signin() {
     setInfoMessage(null);
 
     if (!email.trim() || !password.trim()) {
-      setLocalError('Заполните почту и пароль.');
+      const errorMsg = 'Заполните почту и пароль.';
+      setLocalError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -65,15 +69,17 @@ export default function Signin() {
       await dispatch(
         loginUser({ email: email.trim(), password: password.trim() }),
       ).unwrap();
+      toast.success('Вход выполнен успешно!');
       router.push('/');
     } catch (loginError) {
-      if (loginError instanceof Error) {
-        setLocalError(loginError.message);
-      } else if (typeof loginError === 'string') {
-        setLocalError(loginError);
-      } else {
-        setLocalError('Не удалось выполнить вход. Попробуйте снова.');
-      }
+      const errorMessage =
+        loginError instanceof Error
+          ? loginError.message
+          : typeof loginError === 'string'
+            ? loginError
+            : 'Не удалось выполнить вход. Попробуйте снова.';
+      setLocalError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 

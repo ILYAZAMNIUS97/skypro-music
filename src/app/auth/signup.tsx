@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   clearAuthError,
@@ -34,12 +35,12 @@ export default function SignUp() {
 
   useEffect(() => {
     if (error) {
-      if (fieldErrors && Object.keys(fieldErrors).length > 0) {
-        const [baseMessage] = error.split(':');
-        setLocalError((baseMessage ?? error).trim());
-      } else {
-        setLocalError(error);
-      }
+      const errorMessage =
+        fieldErrors && Object.keys(fieldErrors).length > 0
+          ? (error.split(':')[0]?.trim() ?? error)
+          : error;
+      setLocalError(errorMessage);
+      toast.error(errorMessage);
     } else {
       setLocalError(null);
     }
@@ -50,6 +51,7 @@ export default function SignUp() {
       setSuccessMessage(registrationMessage);
       setLocalError(null);
       setFieldErrorsState({});
+      toast.success(registrationMessage);
       const timeout = setTimeout(() => {
         router.push('/auth/signin?registered=1');
         dispatch(clearRegistrationMessage());
@@ -99,24 +101,27 @@ export default function SignUp() {
       !password.trim() ||
       !confirmPassword.trim()
     ) {
-      setLocalError('Заполните все поля.');
+      const errorMsg = 'Заполните все поля.';
+      setLocalError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     if (!usernamePattern.test(username.trim())) {
-      setLocalError(
-        'Имя пользователя может содержать только латиницу, цифры и символы @ . + - _',
-      );
+      const errorMsg =
+        'Имя пользователя может содержать только латиницу, цифры и символы @ . + - _';
+      setLocalError(errorMsg);
+      toast.error(errorMsg);
       setFieldErrorsState({
-        username: [
-          'Имя пользователя может содержать только латиницу, цифры и символы @ . + - _',
-        ],
+        username: [errorMsg],
       });
       return;
     }
 
     if (password !== confirmPassword) {
-      setLocalError('Пароли не совпадают.');
+      const errorMsg = 'Пароли не совпадают.';
+      setLocalError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -129,13 +134,14 @@ export default function SignUp() {
         }),
       ).unwrap();
     } catch (registerError) {
-      if (registerError instanceof Error) {
-        setLocalError(registerError.message);
-      } else if (typeof registerError === 'string') {
-        setLocalError(registerError);
-      } else {
-        setLocalError('Не удалось завершить регистрацию. Попробуйте снова.');
-      }
+      const errorMessage =
+        registerError instanceof Error
+          ? registerError.message
+          : typeof registerError === 'string'
+            ? registerError
+            : 'Не удалось завершить регистрацию. Попробуйте снова.';
+      setLocalError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
