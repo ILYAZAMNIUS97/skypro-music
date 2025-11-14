@@ -1,0 +1,80 @@
+.playlistItem {
+  width: 100%;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.playlistTrack {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trackTitle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 447px;
+}
+
+.trackTitleImage {
+  width: 51px;
+  height: 51px;
+  padding: 16px;
+  background: #313131;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 17px;
+  border-radius: 2px;
+}
+
+.trackTitleText {
+  flex: 1;
+}
+
+.trackAuthor {
+  width: 321px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.trackAlbum {
+  width: 245px;
+}
+
+.trackTime {
+  display: flex;
+  align-items: center;
+  width: 60px;
+  justify-content: flex-end;
+}
+
+/* Skeleton элементы */
+.skeletonBox {
+  width: 18px;
+  height: 17px;
+  background: linear-gradient(90deg, #313131 0%, #4e4e4e 50%, #313131 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+.skeletonLine {
+  height: 16px;
+  background: linear-gradient(90deg, #313131 0%, #4e4e4e 50%, #313131 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* Плавная анимация shimmer для эффекта загрузки */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

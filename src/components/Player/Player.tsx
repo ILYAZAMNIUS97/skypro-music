@@ -6,6 +6,7 @@ import Link from 'next/link';
 import styles from './Player.module.css';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { ProgressBar } from '@/components/ProgressBar';
+import { PlayerSkeleton } from '@/components/PlayerSkeleton';
 import {
   toggleRepeat,
   toggleShuffle,
@@ -568,13 +569,7 @@ export const Player = () => {
 
   // Показываем индикатор загрузки
   if (state.isLoading) {
-    return (
-      <div className={styles.bar}>
-        <div className={styles.barContent}>
-          <div className={styles.loadingMessage}>Загрузка треков...</div>
-        </div>
-      </div>
-    );
+    return <PlayerSkeleton />;
   }
 
   // Показываем ошибку, если есть

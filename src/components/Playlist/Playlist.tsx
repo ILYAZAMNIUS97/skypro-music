@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useMemo } from 'react';
 import { Track } from '../Track/Track';
+import { PlaylistSkeleton } from '../PlaylistSkeleton';
 import styles from './Playlist.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { clearError, fetchTracks, setPlaylist } from '@/store/playerSlice';
@@ -90,11 +91,7 @@ export const Playlist = ({ initialTracks, errorMessage }: PlaylistProps) => {
   );
 
   if (displayLoading) {
-    return (
-      <div className={styles.content}>
-        <div className={styles.loadingMessage}>Загрузка треков...</div>
-      </div>
-    );
+    return <PlaylistSkeleton count={10} />;
   }
 
   if (displayError) {
