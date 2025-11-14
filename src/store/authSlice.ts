@@ -58,7 +58,6 @@ export const registerUser = createAsyncThunk<
     const response = await authApi.signup(payload);
     return response;
   } catch (error) {
-    console.error('Ошибка регистрации пользователя:', error);
     const message =
       error instanceof Error ? error.message : 'Не удалось зарегистрироваться';
 
@@ -88,7 +87,6 @@ export const loginUser = createAsyncThunk<
 
     return user;
   } catch (error) {
-    console.error('Ошибка входа пользователя:', error);
     const message =
       error instanceof Error ? error.message : 'Не удалось выполнить вход';
 
@@ -123,8 +121,7 @@ export const initializeAuth = createAsyncThunk<
     }
 
     return null;
-  } catch (error) {
-    console.error('Ошибка инициализации аутентификации:', error);
+  } catch {
     return rejectWithValue('Не удалось восстановить сессию');
   }
 });
